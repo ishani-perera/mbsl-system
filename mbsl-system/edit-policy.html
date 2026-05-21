@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Policy - MBSL Insurance</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+  :root {
+    --primary: #0a2558; --bg: #f4f7fe; --success: #10b981; --danger: #ef4444;
+    --text-dark: #1e293b; --text-gray: #64748b;
+    --card-shadow: 0 2px 16px rgba(10,37,88,0.08); --radius: 0.75rem; --sidebar-w: 260px;
+  }
+  [data-theme="dark"] { --bg: #0f172a; --text-dark: #f1f5f9; --text-gray: #94a3b8; }
+  [data-theme="dark"] .form-card, [data-theme="dark"] .sidebar, [data-theme="dark"] .topbar,
+  [data-theme="dark"] .side-panel, [data-theme="dark"] .info-card { background: #1e293b !important; border-color: #334155 !important; }
+  [data-theme="dark"] .form-control, [data-theme="dark"] .form-select { background: #334155 !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+  [data-theme="dark"] .topbar-search input { background: #334155; border-color: #475569; color: #f1f5f9; }
+  [data-theme="dark"] .nav-link { color: #94a3b8 !important; }
+  [data-theme="dark"] body { background: var(--bg); }
+  [data-theme="dark"] .upload-area { background: #334155 !important; border-color: #475569 !important; }
+  [data-theme="dark"] .img-item { border-color: #475569 !important; background: #334155 !important; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text-dark); transition: background 0.3s; }
+  .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh; background: #fff; border-right: 1px solid #e8edf5; display: flex; flex-direction: column; z-index: 100; }
+  .sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; gap: 12px; }
+  .shield { width: 40px; height: 40px; background: linear-gradient(135deg, #0a2558, #1565c0); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0; }
+  .sidebar-brand h2 { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); }
+  .sidebar-brand p { font-size: 0.75rem; color: var(--text-gray); }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 0.6rem; color: var(--text-gray) !important; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; margin-bottom: 4px; }
+  .nav-link:hover { background: #f1f5f9; color: var(--primary) !important; }
+  .nav-link.active { background: var(--primary) !important; color: #fff !important; }
+  .nav-link i { width: 20px; text-align: center; }
+  .sidebar-footer { padding: 16px 12px 20px; }
+  .new-policy-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: linear-gradient(135deg, #0a2558, #1565c0); color: #fff; border: none; border-radius: 0.65rem; font-size: 0.92rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.25s; }
+  .new-policy-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,37,88,0.3); color: #fff; }
+  .topbar { position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: 64px; background: #fff; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; padding: 0 28px; gap: 16px; z-index: 99; }
+  .topbar-search { flex: 1; max-width: 480px; position: relative; }
+  .topbar-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+  .topbar-search input { width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid #e2e8f0; border-radius: 0.65rem; font-size: 0.9rem; color: var(--text-dark); background: #f8fafc; outline: none; transition: all 0.2s; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-gray); font-size: 1rem; transition: all 0.2s; position: relative; }
+  .icon-btn:hover { background: #e2e8f0; color: var(--primary); }
+  .notif-badge { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; background: var(--danger); border-radius: 50%; border: 1.5px solid #fff; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #0a2558, #1565c0); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+  .main { margin-left: var(--sidebar-w); padding-top: 64px; min-height: 100vh; }
+  .main-content { padding: 28px; }
+  .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-gray); }
+  .breadcrumb a { color: var(--text-gray); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--primary); }
+  .breadcrumb .sep { color: #cbd5e1; }
+  .breadcrumb .current { color: var(--text-dark); font-weight: 600; }
+  .content-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+  .form-card { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; padding: 28px; }
+  .form-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .form-card-header h2 { font-size: 1.4rem; font-weight: 700; color: var(--text-dark); }
+  .edit-badge { background: #fef3c7; color: #d97706; font-size: 0.8rem; font-weight: 600; padding: 5px 14px; border-radius: 20px; border: 1.5px solid #fde68a; }
+  .form-label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-gray); margin-bottom: 8px; }
+  .form-control, .form-select { width: 100%; padding: 13px 14px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; font-size: 0.95rem; color: var(--text-dark); background: #f8fafc; outline: none; transition: all 0.2s; font-family: inherit; }
+  .form-control:focus, .form-select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(10,37,88,0.07); }
+  .form-group { margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .amount-wrap { position: relative; }
+  .amount-wrap .currency { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-weight: 600; }
+  .amount-wrap .form-control { padding-left: 28px; }
+  textarea.form-control { resize: vertical; min-height: 120px; }
+  /* Image management */
+  .img-section-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-gray); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .drag-hint { font-size: 0.75rem; color: #94a3b8; font-weight: 400; }
+  .sortable-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; min-height: 60px; }
+  .img-item { position: relative; aspect-ratio: 1; border-radius: 0.55rem; overflow: hidden; border: 1.5px solid #e2e8f0; background: #f8fafc; cursor: grab; transition: transform 0.2s, box-shadow 0.2s; }
+  .img-item:hover { box-shadow: 0 4px 12px rgba(10,37,88,0.15); }
+  .img-item.sortable-ghost { opacity: 0.4; }
+  .img-item.sortable-drag { transform: scale(1.05); box-shadow: 0 8px 20px rgba(10,37,88,0.2); cursor: grabbing; }
+  .img-item img { width: 100%; height: 100%; object-fit: cover; }
+  .img-item .drag-handle { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; background: rgba(0,0,0,0.45); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; }
+  .img-item .remove-img { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; background: rgba(239,68,68,0.9); color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; }
+  .upload-area { border: 2px dashed #cbd5e1; border-radius: 0.65rem; padding: 28px 20px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s; position: relative; }
+  .upload-area:hover { border-color: var(--primary); background: #eff6ff; }
+  .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-area p { font-size: 0.85rem; color: var(--text-gray); }
+  .upload-area i { font-size: 1.5rem; color: #94a3b8; margin-bottom: 8px; display: block; }
+  .divider-line { border: none; border-top: 1px solid #e8edf5; margin: 22px 0; }
+  .form-actions { display: flex; align-items: center; gap: 12px; }
+  .btn-cancel { display: flex; align-items: center; gap: 8px; padding: 12px 22px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; background: #fff; color: var(--text-gray); font-size: 0.92rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+  .btn-cancel:hover { border-color: #94a3b8; }
+  .btn-save { display: flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #0a2558, #1565c0); color: #fff; border: none; border-radius: 0.6rem; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.25s; }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,37,88,0.3); }
+  .btn-save .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  .btn-save.loading .spinner { display: block; }
+  .btn-save.loading .btn-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Side panel */
+  .side-panel { display: flex; flex-direction: column; gap: 16px; }
+  .info-card { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; padding: 20px; }
+  .info-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .info-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 0.82rem; color: var(--text-gray); line-height: 1.5; }
+  .info-item:last-child { margin-bottom: 0; }
+  .info-item i { margin-top: 2px; color: var(--primary); }
+  .status-select-wrap { margin-top: 4px; }
+  .danger-card { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius); padding: 18px; }
+  .danger-card h3 { font-size: 0.9rem; font-weight: 700; color: #dc2626; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .danger-card p { font-size: 0.8rem; color: #b91c1c; margin-bottom: 14px; }
+  .btn-danger { width: 100%; padding: 10px; background: #ef4444; color: #fff; border: none; border-radius: 0.5rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+  .btn-danger:hover { background: #dc2626; }
+  /* Toast */
+  .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 280px; animation: slideIn 0.3s ease; position: relative; }
+  .toast.success { background: #f0fdf4; border-left: 4px solid #10b981; }
+  .toast.error { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .toast .t-icon { font-size: 1.1rem; margin-top: 1px; }
+  .toast.success .t-icon { color: #10b981; }
+  .toast.error .t-icon { color: #ef4444; }
+  .toast .t-title { font-weight: 600; font-size: 0.88rem; color: var(--text-dark); }
+  .toast .t-msg { font-size: 0.82rem; color: var(--text-gray); }
+  .toast-close { position: absolute; top: 10px; right: 12px; background: none; border: none; cursor: pointer; color: #94a3b8; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  footer { background: #fff; border-top: 1px solid #e8edf5; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+  footer p { font-size: 0.8rem; color: var(--text-gray); }
+  footer .footer-links { display: flex; gap: 18px; }
+  footer .footer-links a { font-size: 0.8rem; color: var(--text-gray); text-decoration: none; }
+  footer .footer-links a:hover { color: var(--primary); }
+  @media (max-width: 1100px) { .content-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main { margin-left: 0; } .topbar { left: 0; } .form-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="shield"><i class="fas fa-shield-halved"></i></div>
+    <div><h2>MBSL Management</h2><p>Policy Administration</p></div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-table-cells-large"></i> Dashboard</a>
+    <a href="policies.html" class="nav-link active"><i class="fas fa-file-contract"></i> Policies</a>
+    <a href="profile.html" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="add-policy.html" class="new-policy-btn"><i class="fas fa-plus"></i> New Policy</a>
+  </div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-search">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" placeholder="Quick search...">
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" id="themeToggle"><i class="fas fa-moon"></i></button>
+    <button class="icon-btn"><i class="fas fa-bell"></i><span class="notif-badge"></span></button>
+    <div class="avatar" id="userAvatar">AU</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="main-content">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a>
+      <span class="sep"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i></span>
+      <a href="policies.html">Policies</a>
+      <span class="sep"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i></span>
+      <span class="current" id="breadcrumbId">Edit Policy</span>
+    </div>
+
+    <div class="content-grid">
+      <div class="form-card">
+        <div class="form-card-header">
+          <h2>Edit Policy</h2>
+          <div class="edit-badge"><i class="fas fa-pen" style="font-size:0.7rem"></i> Edit Mode</div>
+        </div>
+
+        <form id="editForm">
+          <div class="form-group">
+            <label class="form-label">Policy Title</label>
+            <input type="text" class="form-control" id="pTitle" required>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label class="form-label">Category</label>
+              <select class="form-select" id="pCategory" required>
+                <option value="">Select Category</option>
+                <option value="Motor">Motor</option>
+                <option value="Health">Health</option>
+                <option value="Life">Life</option>
+                <option value="Property">Property</option>
+                <option value="Cyber">Cyber</option>
+                <option value="Travel">Travel</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Annual Premium Amount</label>
+              <div class="amount-wrap">
+                <span class="currency">$</span>
+                <input type="number" class="form-control" id="pAmount" step="0.01" min="0" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Policy Description &amp; Coverage Details</label>
+            <textarea class="form-control" id="pDesc" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <div class="img-section-title">
+              Documentation &amp; Images
+              <span class="drag-hint"><i class="fas fa-arrows-up-down-left-right" style="font-size:0.7rem"></i> Drag to reorder</span>
+            </div>
+            <div class="sortable-grid" id="sortableGrid"></div>
+            <div class="upload-area">
+              <input type="file" id="newFileInput" multiple accept="image/*">
+              <i class="fas fa-cloud-arrow-up"></i>
+              <p>Click or drag to add more images</p>
+            </div>
+          </div>
+
+          <hr class="divider-line">
+
+          <div class="form-actions">
+            <a href="policies.html" class="btn-cancel"><i class="fas fa-xmark"></i> Cancel</a>
+            <button type="submit" class="btn-save" id="saveBtn">
+              <div class="spinner"></div>
+              <span class="btn-text"><i class="fas fa-floppy-disk"></i> Save Changes</span>
+            </button>
+            <a href="#" id="viewPolicyLink" style="margin-left:auto;color:var(--primary);font-size:0.88rem;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px">
+              <i class="fas fa-eye"></i> View Policy
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <div class="side-panel">
+        <!-- Policy info -->
+        <div class="info-card">
+          <h3><i class="fas fa-circle-info" style="color:var(--primary)"></i> Policy Status</h3>
+          <div class="status-select-wrap">
+            <label class="form-label">Current Status</label>
+            <select class="form-select" id="pStatus">
+              <option value="Active">Active</option>
+              <option value="Draft">Draft</option>
+              <option value="Lapsed">Lapsed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3><i class="fas fa-lightbulb" style="color:#f59e0b"></i> Edit Guidelines</h3>
+          <div class="info-item"><i class="fas fa-check-circle"></i> All fields are required before saving.</div>
+          <div class="info-item"><i class="fas fa-check-circle"></i> Drag images to reorder them in the gallery.</div>
+          <div class="info-item"><i class="fas fa-check-circle"></i> Category changes may trigger compliance review.</div>
+          <div class="info-item"><i class="fas fa-check-circle"></i> Changes are saved immediately upon submission.</div>
+        </div>
+
+        <div class="danger-card">
+          <h3><i class="fas fa-triangle-exclamation"></i> Danger Zone</h3>
+          <p>Permanently delete this policy. This action cannot be reversed and all associated data will be lost.</p>
+          <button class="btn-danger" onclick="confirmDeletePolicy()"><i class="fas fa-trash-can"></i> Delete This Policy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>© 2024 MBSL Insurance Management Platform. All rights reserved.</p>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Terms</a><a href="#">Support</a></div>
+  </footer>
+</main>
+
+<script>
+  if (localStorage.getItem('mbsl_auth') !== 'true') window.location.href = 'index.html';
+  const user = JSON.parse(localStorage.getItem('mbsl_user') || '{}');
+  if (user.name) document.getElementById('userAvatar').textContent = user.name.split(' ').map(n=>n[0]).join('').substring(0,2);
+
+  const themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); themeToggle.innerHTML = t === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>'; }
+  applyTheme(localStorage.getItem('mbsl_theme') || 'light');
+  themeToggle.addEventListener('click', () => { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; localStorage.setItem('mbsl_theme', t); applyTheme(t); });
+
+  const params = new URLSearchParams(window.location.search);
+  const policyId = params.get('id') || 'POL-88210';
+  document.getElementById('breadcrumbId').textContent = `Edit ${policyId}`;
+  document.getElementById('viewPolicyLink').href = `view-policy.html?id=${policyId}`;
+
+  // Sample data
+  const samplePolicies = {
+    'POL-88210': { title: 'Comprehensive Auto Shield', category: 'Motor', amount: 1240.00, desc: 'Full comprehensive motor insurance covering collision, theft, fire, and third-party liability with roadside assistance.', status: 'Active', images: [
+      'https://images.pexels.com/photos/8441817/pexels-photo-8441817.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200',
+      'https://images.pexels.com/photos/7736036/pexels-photo-7736036.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200',
+    ]},
+    'POL-55312': { title: 'Luxury Estate Premium Coverage', category: 'Property', amount: 12450.00, desc: 'Premium property coverage for luxury estates including dwelling, personal property, and loss of use with quarterly premium payments.', status: 'Active', images: [
+      'https://images.pexels.com/photos/8143668/pexels-photo-8143668.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200',
+      'https://images.pexels.com/photos/8143683/pexels-photo-8143683.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200',
+      'https://images.pexels.com/photos/8082328/pexels-photo-8082328.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200',
+    ]}
+  };
+
+  const policy = samplePolicies[policyId] || { title: 'Policy ' + policyId, category: 'Motor', amount: 1000, desc: 'Policy description.', status: 'Active', images: [] };
+
+  document.getElementById('pTitle').value = policy.title;
+  document.getElementById('pCategory').value = policy.category;
+  document.getElementById('pAmount').value = policy.amount;
+  document.getElementById('pDesc').value = policy.desc;
+  document.getElementById('pStatus').value = policy.status;
+
+  let currentImages = [...policy.images];
+
+  function renderImages() {
+    const grid = document.getElementById('sortableGrid');
+    grid.innerHTML = currentImages.map((src, i) => `
+      <div class="img-item" data-idx="${i}">
+        <img src="${src}" alt="Policy image ${i+1}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23e2e8f0%22 width=%22100%22 height=%22100%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2224%22>📄</text></svg>'">
+        <div class="drag-handle"><i class="fas fa-grip-dots-vertical"></i></div>
+        <button class="remove-img" onclick="removeImage(${i})" title="Remove"><i class="fas fa-xmark"></i></button>
+      </div>`).join('');
+
+    // Init SortableJS
+    Sortable.create(grid, {
+      animation: 200,
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      handle: '.drag-handle',
+      onEnd: function(evt) {
+        const moved = currentImages.splice(evt.oldIndex, 1)[0];
+        currentImages.splice(evt.newIndex, 0, moved);
+      }
+    });
+  }
+
+  function removeImage(idx) {
+    currentImages.splice(idx, 1);
+    renderImages();
+    showToast('success', 'Image Removed', 'Image has been removed from the policy.');
+  }
+
+  document.getElementById('newFileInput').addEventListener('change', function() {
+    Array.from(this.files).forEach(f => {
+      const reader = new FileReader();
+      reader.onload = e => { currentImages.push(e.target.result); renderImages(); };
+      reader.readAsDataURL(f);
+    });
+  });
+
+  renderImages();
+
+  // Submit
+  document.getElementById('editForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    btn.classList.add('loading');
+    
+    const title = document.getElementById('pTitle').value;
+    
+    await new Promise(r => setTimeout(r, 1100));
+    btn.classList.remove('loading');
+    
+    // Log the activity
+    const activityTitle = `Policy "${title}" Updated`;
+    if (window.logActivity) {
+      window.logActivity(activityTitle, 'policy', 'pen', 'blue');
+    }
+    
+    showToast('success', 'Policy Updated', `${title} has been successfully updated.`);
+    setTimeout(() => window.location.href = 'policies.html', 1500);
+  });
+
+  function confirmDeletePolicy() {
+    if (confirm(`Are you sure you want to permanently delete policy ${policyId}? This cannot be undone.`)) {
+      showToast('error', 'Policy Deleted', 'The policy has been permanently removed.');
+      setTimeout(() => window.location.href = 'policies.html', 1500);
+    }
+  }
+
+  function showToast(type, title, msg) {
+    const icons = { success: 'fas fa-circle-check', error: 'fas fa-circle-xmark' };
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="t-icon ${icons[type]||'fas fa-info-circle'}"></i><div><div class="t-title">${title}</div><div class="t-msg">${msg}</div></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+</script>
+</body>
+</html>

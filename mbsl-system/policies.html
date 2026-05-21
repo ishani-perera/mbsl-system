@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Policy Inventory - MBSL Insurance</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.7.0/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root {
+    --primary: #0a2558; --primary-dark: #0d1b3e; --primary-mid: #1a3a6e;
+    --bg: #f4f7fe; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    --text-dark: #1e293b; --text-gray: #64748b;
+    --card-shadow: 0 2px 16px rgba(10,37,88,0.08); --radius: 0.75rem; --sidebar-w: 260px;
+  }
+  [data-theme="dark"] { --bg: #0f172a; --text-dark: #f1f5f9; --text-gray: #94a3b8; }
+  [data-theme="dark"] .card-box, [data-theme="dark"] .sidebar, [data-theme="dark"] .topbar,
+  [data-theme="dark"] .table-wrap, [data-theme="dark"] .filter-bar { background: #1e293b !important; border-color: #334155 !important; }
+  [data-theme="dark"] table thead { background: #0f172a !important; }
+  [data-theme="dark"] table tbody tr:hover { background: #334155 !important; }
+  [data-theme="dark"] .search-inp, [data-theme="dark"] .cat-select { background: #334155 !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+  [data-theme="dark"] .topbar-search input { background: #334155; border-color: #475569; color: #f1f5f9; }
+  [data-theme="dark"] .nav-link { color: #94a3b8 !important; }
+  [data-theme="dark"] body { background: var(--bg); }
+  [data-theme="dark"] .policy-id { color: #93c5fd !important; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text-dark); transition: background 0.3s, color 0.3s; }
+  .sidebar {
+    position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+    background: #fff; border-right: 1px solid #e8edf5;
+    display: flex; flex-direction: column; z-index: 100; transition: background 0.3s;
+  }
+  .sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; gap: 12px; }
+  .sidebar-brand .shield { width: 40px; height: 40px; background: linear-gradient(135deg, #0a2558, #1565c0); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0; }
+  .sidebar-brand h2 { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); }
+  .sidebar-brand p { font-size: 0.75rem; color: var(--text-gray); }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 0.6rem; color: var(--text-gray) !important; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; margin-bottom: 4px; }
+  .nav-link:hover { background: #f1f5f9; color: var(--primary) !important; }
+  .nav-link.active { background: var(--primary) !important; color: #fff !important; }
+  .nav-link i { width: 20px; text-align: center; font-size: 0.95rem; }
+  .sidebar-footer { padding: 16px 12px 20px; }
+  .new-policy-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: linear-gradient(135deg, #0a2558, #1565c0); color: #fff; border: none; border-radius: 0.65rem; font-size: 0.92rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.25s; }
+  .new-policy-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,37,88,0.3); color: #fff; }
+  .topbar { position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: 64px; background: #fff; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; padding: 0 28px; gap: 16px; z-index: 99; transition: background 0.3s; }
+  .topbar-search { flex: 1; max-width: 480px; position: relative; }
+  .topbar-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; }
+  .topbar-search input { width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid #e2e8f0; border-radius: 0.65rem; font-size: 0.9rem; color: var(--text-dark); background: #f8fafc; outline: none; transition: all 0.2s; }
+  .topbar-search input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(10,37,88,0.07); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-gray); font-size: 1rem; transition: all 0.2s; position: relative; }
+  .icon-btn:hover { background: #e2e8f0; color: var(--primary); }
+  .notif-badge { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; background: var(--danger); border-radius: 50%; border: 1.5px solid #fff; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #0a2558, #1565c0); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer; overflow: hidden; }
+  .main { margin-left: var(--sidebar-w); padding-top: 64px; min-height: 100vh; }
+  .main-content { padding: 32px 28px; }
+  /* Breadcrumb */
+  .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-gray); }
+  .breadcrumb a { color: var(--text-gray); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--primary); }
+  .breadcrumb .sep { color: #cbd5e1; }
+  .breadcrumb .current { color: var(--text-dark); font-weight: 600; }
+  /* Page header */
+  .page-header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .page-header h1 { font-size: 1.9rem; font-weight: 700; color: var(--text-dark); }
+  .page-header p { color: var(--text-gray); font-size: 0.9rem; margin-top: 4px; }
+  .export-btns { display: flex; gap: 10px; }
+  .btn-export {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 0.6rem;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    border: 1.5px solid #e2e8f0; background: #fff;
+    color: var(--text-dark); transition: all 0.2s;
+  }
+  .btn-export:hover { border-color: var(--primary); color: var(--primary); background: #f0f4ff; }
+  /* Filter bar */
+  .filter-bar {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--card-shadow); border: 1px solid #e8edf5;
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px;
+  }
+  .search-wrap { position: relative; flex: 1; }
+  .search-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+  .search-inp { width: 100%; padding: 11px 14px 11px 40px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; font-size: 0.9rem; outline: none; color: var(--text-dark); background: #f8fafc; transition: all 0.2s; }
+  .search-inp:focus { border-color: var(--primary); background: #fff; }
+  .cat-select { padding: 11px 16px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; font-size: 0.9rem; outline: none; color: var(--text-dark); background: #f8fafc; cursor: pointer; min-width: 160px; }
+  .btn-filter { padding: 11px 22px; background: var(--primary); color: #fff; border: none; border-radius: 0.6rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn-filter:hover { background: #1a3a6e; }
+  /* Table */
+  .table-wrap { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: #f8fafc; }
+  thead th { padding: 14px 18px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-gray); text-align: left; border-bottom: 1px solid #e8edf5; }
+  tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f8fafc; }
+  tbody td { padding: 16px 18px; font-size: 0.9rem; color: var(--text-dark); vertical-align: middle; }
+  .policy-id { color: var(--primary); font-weight: 700; font-size: 0.88rem; }
+  .policy-title { font-weight: 600; color: var(--text-dark); }
+  .policy-sub { font-size: 0.78rem; color: var(--text-gray); margin-top: 2px; }
+  .cat-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 600; }
+  .cat-motor { background: #dbeafe; color: #1d4ed8; }
+  .cat-health { background: #dcfce7; color: #16a34a; }
+  .cat-life { background: #fef9c3; color: #854d0e; }
+  .cat-property { background: #fce7f3; color: #9d174d; }
+  .cat-cyber { background: #f3e8ff; color: #6b21a8; }
+  .cat-travel { background: #e0f2fe; color: #0369a1; }
+  .amount { font-weight: 600; color: var(--text-dark); }
+  .actions { display: flex; align-items: center; gap: 10px; }
+  .action-btn { width: 34px; height: 34px; border-radius: 0.45rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: all 0.2s; }
+  .action-btn.view { background: #eff6ff; color: #3b82f6; }
+  .action-btn.edit { background: #f0fdf4; color: #10b981; }
+  .action-btn.del { background: #fef2f2; color: #ef4444; }
+  .action-btn:hover { transform: scale(1.1); opacity: 0.85; }
+  /* Pagination */
+  .table-footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-top: 1px solid #e8edf5; }
+  .showing-text { font-size: 0.83rem; color: var(--text-gray); }
+  .pagination { display: flex; gap: 6px; }
+  .page-btn { width: 36px; height: 36px; border-radius: 0.45rem; border: 1.5px solid #e2e8f0; background: #fff; color: var(--text-dark); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .page-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+  /* Delete modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: #fff; border-radius: var(--radius); padding: 32px; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); text-align: center; animation: modalIn 0.25s ease; }
+  @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-icon { width: 60px; height: 60px; border-radius: 50%; background: #fef2f2; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.5rem; color: #ef4444; }
+  .modal-box h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+  .modal-box p { font-size: 0.88rem; color: var(--text-gray); margin-bottom: 24px; }
+  .modal-btns { display: flex; gap: 12px; justify-content: center; }
+  .btn-cancel { padding: 10px 24px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; background: #fff; color: var(--text-gray); font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+  .btn-del-confirm { padding: 10px 24px; background: #ef4444; color: #fff; border: none; border-radius: 0.6rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+  /* Toast */
+  .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 280px; animation: slideIn 0.3s ease; position: relative; }
+  .toast.success { background: #f0fdf4; border-left: 4px solid #10b981; }
+  .toast.error { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .toast .t-icon { font-size: 1.1rem; margin-top: 1px; }
+  .toast.success .t-icon { color: #10b981; }
+  .toast.error .t-icon { color: #ef4444; }
+  .toast .t-title { font-weight: 600; font-size: 0.88rem; color: var(--text-dark); }
+  .toast .t-msg { font-size: 0.82rem; color: var(--text-gray); }
+  .toast-close { position: absolute; top: 10px; right: 12px; background: none; border: none; cursor: pointer; color: #94a3b8; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  footer { background: #fff; border-top: 1px solid #e8edf5; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+  footer p { font-size: 0.8rem; color: var(--text-gray); }
+  footer .footer-links { display: flex; gap: 18px; }
+  footer .footer-links a { font-size: 0.8rem; color: var(--text-gray); text-decoration: none; }
+  footer .footer-links a:hover { color: var(--primary); }
+  @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main { margin-left: 0; } .topbar { left: 0; } .page-header-row { flex-direction: column; gap: 14px; } }
+</style>
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-icon"><i class="fas fa-trash-can"></i></div>
+    <h3>Delete Policy</h3>
+    <p>Are you sure you want to delete <strong id="deleteTitle"></strong>? This action cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-del-confirm" onclick="confirmDelete()"><i class="fas fa-trash-can"></i> Delete Policy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="shield"><i class="fas fa-shield-halved"></i></div>
+    <div><h2>MBSL Management</h2><p>Policy Administration</p></div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-table-cells-large"></i> Dashboard</a>
+    <a href="policies.html" class="nav-link active"><i class="fas fa-file-contract"></i> Policies</a>
+    <a href="profile.html" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="add-policy.html" class="new-policy-btn"><i class="fas fa-plus"></i> New Policy</a>
+  </div>
+</aside>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-search">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" placeholder="Global Search..." id="globalSearch">
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" id="themeToggle"><i class="fas fa-moon"></i></button>
+    <button class="icon-btn"><i class="fas fa-bell"></i><span class="notif-badge"></span></button>
+    <div class="avatar" id="userAvatar">AU</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="main-content">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a>
+      <span class="sep"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i></span>
+      <span class="current">Policies</span>
+    </div>
+    <div class="page-header-row">
+      <div class="page-header">
+        <h1>Policy Inventory</h1>
+        <p>Manage and monitor all active insurance policies across categories.</p>
+      </div>
+      <div class="export-btns">
+        <button class="btn-export" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+        <button class="btn-export" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Export PDF</button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" class="search-inp" id="tableSearch" placeholder="Search by Policy ID or Title...">
+      </div>
+      <select class="cat-select" id="catFilter">
+        <option value="">All Categories</option>
+        <option value="Motor">Motor</option>
+        <option value="Health">Health</option>
+        <option value="Life">Life</option>
+        <option value="Property">Property</option>
+        <option value="Cyber">Cyber</option>
+        <option value="Travel">Travel</option>
+      </select>
+      <button class="btn-filter" onclick="applyFilter()">Apply Filter</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>POLICY TITLE</th>
+            <th>CATEGORY</th>
+            <th>PREMIUM AMOUNT</th>
+            <th style="text-align:right">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="policyTableBody"></tbody>
+      </table>
+      <div class="table-footer">
+        <span class="showing-text" id="showingText">Showing 5 of 10 policies</span>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>© 2024 MBSL Insurance Management Platform. All rights reserved.</p>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Terms</a><a href="#">Support</a></div>
+  </footer>
+</main>
+
+<script type="module">
+  import Api from './js/api.js';
+  import { initApp, showToast, formatCurrency, getUser } from './js/app.js';
+
+  console.log('=== POLICIES PAGE LOADED ===');
+
+  // Initialize global settings (checking auth, role UI, themes, global search)
+  initApp();
+  console.log('App initialized');
+
+  const user = getUser();
+  const isAdmin = user.role === 'Admin';
+
+  let allPolicies = [];
+  let totalPoliciesCount = 0;
+  let currentPage = 1;
+  const perPage = 5;
+  let deleteTargetId = null;
+
+  const catColors = { 
+    Motor: 'cat-motor', 
+    Health: 'cat-health', 
+    Life: 'cat-life', 
+    Property: 'cat-property', 
+    Cyber: 'cat-cyber', 
+    Travel: 'cat-travel' 
+  };
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    // Convert to string to handle numeric values (like p.id from database)
+    str = String(str);
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  async function loadPolicies() {
+    const q = document.getElementById('tableSearch').value.trim();
+    const cat = document.getElementById('catFilter').value;
+
+    try {
+      console.log('LoadPolicies called with:', {q, cat, limit: perPage, page: currentPage});
+      const res = await Api.listPolicies({ q: q, category: cat, limit: perPage, page: currentPage });
+      console.log('Raw API Response:', res);
+      
+      // Check if response has the right structure
+      if (!res) {
+        console.error('No response received');
+        showToast('error', 'Network Error', 'No response from server.');
+        return;
+      }
+      
+      const responseData = res.data;
+      console.log('Response data:', responseData);
+      
+      if (responseData && responseData.success) {
+        allPolicies = responseData.policies && Array.isArray(responseData.policies) ? responseData.policies : [];
+        totalPoliciesCount = responseData.total || allPolicies.length;
+        console.log('✓ Loaded Policies:', allPolicies.length, 'Total:', totalPoliciesCount);
+        console.log('Policies array:', allPolicies);
+        renderTable();
+      } else {
+        console.error('API returned error:', responseData);
+        showToast('error', 'Error Loading Policies', responseData?.message || 'Could not load policies.');
+      }
+    } catch (err) {
+      console.error('Catch error:', err.message, err);
+      showToast('error', 'Network Error', 'Could not load policies from database.');
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('policyTableBody');
+    console.log('✓ renderTable called - allPolicies.length:', allPolicies.length);
+    if (!tbody) {
+      console.error('CRITICAL ERROR: tbody#policyTableBody not found!');
+      return;
+    }
+    if (!allPolicies || allPolicies.length === 0) {
+      console.log('No policies to display');
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-gray)"><i class="fas fa-folder-open" style="font-size:2rem;display:block;margin-bottom:10px;color:#cbd5e1"></i>No policies found</td></tr>`;
+    } else {
+      console.log('Rendering', allPolicies.length, 'policies');
+      tbody.innerHTML = allPolicies.map((p, idx) => `
+        <tr>
+          <td><span class="policy-id">${escapeHtml(p.policy_id || p.id || '-')}</span></td>
+          <td><div class="policy-title">${escapeHtml(p.title)}</div><div class="policy-sub">Registered to ${escapeHtml(p.holder_name || p.owner_name || 'Admin User')}</div></td>
+          <td><span class="cat-badge ${catColors[p.category]||'cat-motor'}">${escapeHtml(p.category)}</span></td>
+          <td><span class="amount">${formatCurrency(p.premium_amount)} / yr</span></td>
+          <td style="text-align:right">
+            <div class="actions" style="justify-content:flex-end">
+              <button class="action-btn view" onclick="viewPolicy('${p.id}')" title="View"><i class="fas fa-eye"></i></button>
+              ${isAdmin ? `
+                <button class="action-btn edit" onclick="editPolicy('${p.id}')" title="Edit"><i class="fas fa-pen"></i></button>
+                <button class="action-btn del" onclick="openDeleteModal('${p.id}','${escapeHtml(p.title)}')" title="Delete"><i class="fas fa-trash-can"></i></button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+    const offset = (currentPage - 1) * perPage;
+    const start = allPolicies && allPolicies.length > 0 ? offset + 1 : 0;
+    const end = offset + (allPolicies ? allPolicies.length : 0);
+    const showingElement = document.getElementById('showingText');
+    if (showingElement) {
+      showingElement.textContent = `Showing ${start}-${end} of ${totalPoliciesCount} policies`;
+      console.log(`✓ Updated showingText to: "Showing ${start}-${end} of ${totalPoliciesCount} policies"`);
+    } else {
+      console.error('ERROR: showingText element not found!');
+    }
+    renderPagination();
+  }
+
+  function renderPagination() {
+    const total = Math.ceil(totalPoliciesCount / perPage);
+    const pg = document.getElementById('pagination');
+    if (total <= 1) {
+      pg.innerHTML = '';
+      return;
+    }
+    let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''} style="${currentPage===1?'opacity:0.4;cursor:not-allowed':''}"><i class="fas fa-chevron-left" style="font-size:0.7rem"></i></button>`;
+    for (let i = 1; i <= total; i++) {
+      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''} style="${currentPage===total?'opacity:0.4;cursor:not-allowed':''}"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i></button>`;
+    pg.innerHTML = html;
+  }
+
+  window.goPage = function(p) {
+    const total = Math.ceil(totalPoliciesCount / perPage);
+    if (p < 1 || p > total) return;
+    currentPage = p;
+    loadPolicies();
+  };
+
+  window.applyFilter = function() {
+    currentPage = 1;
+    loadPolicies();
+  };
+
+  document.getElementById('tableSearch').addEventListener('input', () => {
+    currentPage = 1;
+    loadPolicies();
+  });
+  document.getElementById('catFilter').addEventListener('change', () => {
+    currentPage = 1;
+    loadPolicies();
+  });
+
+  window.viewPolicy = function(id) { window.location.href = `view-policy.html?id=${id}`; };
+  window.editPolicy = function(id) { window.location.href = `edit-policy.html?id=${id}`; };
+
+  window.openDeleteModal = function(id, title) {
+    deleteTargetId = id;
+    document.getElementById('deleteTitle').textContent = title;
+    document.getElementById('deleteModal').classList.add('show');
+  };
+  window.closeDeleteModal = function() {
+    document.getElementById('deleteModal').classList.remove('show');
+    deleteTargetId = null;
+  };
+  window.confirmDelete = async function() {
+    if (!deleteTargetId) return;
+    try {
+      const res = await Api.deletePolicy(deleteTargetId);
+      if (res.data && res.data.success) {
+        closeDeleteModal();
+        showToast('success', 'Policy Deleted', 'The policy has been successfully removed.');
+        loadPolicies();
+      } else {
+        showToast('error', 'Error Deleting Policy', res.data.message || 'Could not delete policy.');
+      }
+    } catch (err) {
+      showToast('error', 'Network Error', 'Could not delete policy.');
+    }
+  };
+
+  // Check URL params for search
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('q')) { 
+    document.getElementById('tableSearch').value = urlParams.get('q'); 
+  }
+
+  async function loadExportData() {
+    const q = document.getElementById('tableSearch').value.trim();
+    const cat = document.getElementById('catFilter').value;
+    try {
+      const res = await Api.listPolicies({ q: q, category: cat, limit: 1000, page: 1 });
+      if (res.data && res.data.success) {
+        return res.data.policies || [];
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [];
+  }
+
+  window.exportCSV = async function() {
+    const policies = await loadExportData();
+    if (!policies || !policies.length) {
+      showToast('error', 'Export Failed', 'No policies found to export.');
+      return;
+    }
+    const data = policies.map(p => ({ 
+      'Policy ID': (p.policy_id || p.id), 
+      Title: p.title, 
+      Category: p.category, 
+      'Premium Amount': parseFloat(p.premium_amount), 
+      Status: p.status,
+      Owner: p.holder_name || p.owner_name || 'Admin User'
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Policies');
+    XLSX.writeFile(wb, 'MBSL_Policies.xlsx');
+    showToast('success', 'Export Successful', 'Policies exported to Excel/CSV.');
+  };
+
+  window.exportPDF = async function() {
+    const policies = await loadExportData();
+    if (!policies || !policies.length) {
+      showToast('error', 'Export Failed', 'No policies found to export.');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFillColor(10, 37, 88);
+    doc.rect(0, 0, 210, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MBSL Insurance - Policy Inventory', 14, 18);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 25);
+    doc.autoTable({
+      startY: 36,
+      head: [['Policy ID', 'Title', 'Category', 'Premium Amount', 'Status', 'Owner']],
+      body: policies.map(p => [(p.policy_id || p.id), p.title, p.category, `$${parseFloat(p.premium_amount).toLocaleString('en-US',{minimumFractionDigits:2})}`, p.status, p.holder_name || p.owner_name || 'Admin User']),
+      headStyles: { fillColor: [10, 37, 88], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9 },
+      alternateRowStyles: { fillColor: [244, 247, 254] },
+      styles: { lineColor: [232, 237, 245], lineWidth: 0.3 }
+    });
+    doc.save('MBSL_Policies.pdf');
+    showToast('success', 'PDF Exported', 'Policies exported to PDF successfully.');
+  };
+
+  // Initial load
+  console.log('About to call loadPolicies()');
+  loadPolicies();
+  console.log('loadPolicies() called');
+</script>
+</body>
+</html>

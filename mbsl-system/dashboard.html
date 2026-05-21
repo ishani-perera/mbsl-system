@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - MBSL Insurance</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --primary: #0a2558;
+    --primary-dark: #0d1b3e;
+    --primary-mid: #1a3a6e;
+    --bg: #f4f7fe;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text-dark: #1e293b;
+    --text-gray: #64748b;
+    --card-shadow: 0 2px 16px rgba(10,37,88,0.08);
+    --radius: 0.75rem;
+    --sidebar-w: 260px;
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a;
+    --text-dark: #f1f5f9;
+    --text-gray: #94a3b8;
+    --card-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  [data-theme="dark"] .card, [data-theme="dark"] .sidebar,
+  [data-theme="dark"] .topbar, [data-theme="dark"] .stat-card,
+  [data-theme="dark"] .alert-panel, [data-theme="dark"] .chart-card,
+  [data-theme="dark"] .agent-card { background: #1e293b !important; border-color: #334155 !important; }
+  [data-theme="dark"] .topbar-search input { background: #334155; border-color: #475569; color: #f1f5f9; }
+  [data-theme="dark"] .nav-link { color: #94a3b8 !important; }
+  [data-theme="dark"] body { background: var(--bg); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text-dark); transition: background 0.3s, color 0.3s; }
+  /* Sidebar */
+  .sidebar {
+    position: fixed; top: 0; left: 0;
+    width: var(--sidebar-w); height: 100vh;
+    background: #fff;
+    border-right: 1px solid #e8edf5;
+    display: flex; flex-direction: column;
+    z-index: 100;
+    transition: background 0.3s;
+  }
+  .sidebar-brand {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #e8edf5;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sidebar-brand .shield {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #0a2558, #1565c0);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.1rem; flex-shrink: 0;
+  }
+  .sidebar-brand h2 { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); }
+  .sidebar-brand p { font-size: 0.75rem; color: var(--text-gray); }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-link {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: 0.6rem;
+    color: var(--text-gray) !important;
+    text-decoration: none; font-size: 0.9rem; font-weight: 500;
+    transition: all 0.2s; margin-bottom: 4px;
+  }
+  .nav-link:hover { background: #f1f5f9; color: var(--primary) !important; }
+  .nav-link.active { background: var(--primary) !important; color: #fff !important; }
+  .nav-link i { width: 20px; text-align: center; font-size: 0.95rem; }
+  .sidebar-footer { padding: 16px 12px 20px; }
+  .new-policy-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #0a2558, #1565c0);
+    color: #fff; border: none; border-radius: 0.65rem;
+    font-size: 0.92rem; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.25s;
+  }
+  .new-policy-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,37,88,0.3); color: #fff; }
+  /* Topbar */
+  .topbar {
+    position: fixed; top: 0; left: var(--sidebar-w); right: 0;
+    height: 64px; background: #fff;
+    border-bottom: 1px solid #e8edf5;
+    display: flex; align-items: center;
+    padding: 0 28px; gap: 16px; z-index: 99;
+    transition: background 0.3s;
+  }
+  .topbar-brand { font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-right: auto; display: none; }
+  .topbar-search {
+    flex: 1; max-width: 480px;
+    position: relative;
+  }
+  .topbar-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; }
+  .topbar-search input {
+    width: 100%; padding: 10px 14px 10px 38px;
+    border: 1.5px solid #e2e8f0; border-radius: 0.65rem;
+    font-size: 0.9rem; color: var(--text-dark);
+    background: #f8fafc; outline: none; transition: all 0.2s;
+  }
+  .topbar-search input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(10,37,88,0.07); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .icon-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: none; background: #f1f5f9;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-gray); font-size: 1rem; transition: all 0.2s; position: relative;
+  }
+  .icon-btn:hover { background: #e2e8f0; color: var(--primary); }
+  .notif-badge {
+    position: absolute; top: 3px; right: 3px;
+    width: 9px; height: 9px; background: var(--danger);
+    border-radius: 50%; border: 1.5px solid #fff;
+  }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, #0a2558, #1565c0);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  /* Main */
+  .main { margin-left: var(--sidebar-w); padding-top: 64px; min-height: 100vh; }
+  .main-content { padding: 32px 28px; }
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 1.9rem; font-weight: 700; color: var(--text-dark); }
+  .page-header p { color: var(--text-gray); font-size: 0.92rem; margin-top: 4px; }
+  /* Stat Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #e8edf5;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10,37,88,0.12); }
+  .stat-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .stat-icon {
+    width: 44px; height: 44px; border-radius: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+  }
+  .stat-icon.blue { background: #eff6ff; color: #3b82f6; }
+  .stat-icon.green { background: #f0fdf4; color: #10b981; }
+  .stat-icon.orange { background: #fff7ed; color: #f59e0b; }
+  .stat-icon.purple { background: #faf5ff; color: #8b5cf6; }
+  .stat-badge { font-size: 0.75rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+  .badge-success { background: #dcfce7; color: #16a34a; }
+  .badge-active { background: #dbeafe; color: #1d4ed8; }
+  .badge-internal { background: #fef3c7; color: #d97706; }
+  .badge-live { background: #d1fae5; color: #059669; display: flex; align-items: center; gap: 5px; }
+  .live-dot { width: 7px; height: 7px; background: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .stat-label { font-size: 0.82rem; color: var(--text-gray); margin-bottom: 5px; }
+  .stat-value { font-size: 2rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; }
+  /* Chart area */
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; margin-bottom: 28px; align-items: stretch; }
+  .chart-card {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--card-shadow); border: 1px solid #e8edf5;
+    padding: 24px;
+    min-height: 430px;
+  }
+  .chart-wrap { position: relative; height: 300px; width: 100%; }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .chart-header h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-dark); }
+  .chart-tabs { display: flex; gap: 6px; }
+  .chart-tab {
+    padding: 6px 14px; border-radius: 0.45rem;
+    font-size: 0.8rem; font-weight: 600;
+    border: 1.5px solid #e2e8f0;
+    background: #fff; color: var(--text-gray); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chart-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .alert-panel {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--card-shadow); border: 1px solid #e8edf5;
+    padding: 20px;
+    display: flex; flex-direction: column;
+  }
+  .alert-panel h3 { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 16px; }
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .alert-item:last-of-type { border-bottom: none; }
+  .alert-icon {
+    width: 36px; height: 36px; border-radius: 0.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; flex-shrink: 0;
+  }
+  .alert-icon.red { background: #fef2f2; color: #ef4444; }
+  .alert-icon.blue { background: #eff6ff; color: #3b82f6; }
+  .alert-icon.orange { background: #fff7ed; color: #f59e0b; }
+  .alert-body .alert-title { font-size: 0.855rem; font-weight: 600; color: var(--text-dark); }
+  .alert-body .alert-desc { font-size: 0.78rem; color: var(--text-gray); margin-top: 2px; }
+  .alert-body .alert-time { font-size: 0.72rem; color: #94a3b8; margin-top: 3px; }
+  .view-all-btn {
+    display: block; text-align: center;
+    margin-top: 12px; padding: 10px;
+    border: 1.5px solid #e2e8f0; border-radius: 0.5rem;
+    color: var(--primary); font-size: 0.82rem; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .view-all-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  /* Agents section */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+  .section-header a { font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600; }
+  .section-header a:hover { text-decoration: underline; }
+  .agents-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .agent-card {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--card-shadow); border: 1px solid #e8edf5;
+    padding: 22px 16px; text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .agent-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(10,37,88,0.1); }
+  .agent-card.invite { border: 2px dashed #cbd5e1; cursor: pointer; }
+  .agent-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    margin: 0 auto 12px; overflow: hidden;
+    background: linear-gradient(135deg, #0a2558, #1565c0);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 1.2rem;
+  }
+  .agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .agent-name { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+  .agent-role { font-size: 0.78rem; color: var(--text-gray); }
+  .invite-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #f1f5f9; border: 2px dashed #cbd5e1;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px; font-size: 1.2rem; color: var(--text-gray);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .invite-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  /* Footer */
+  footer {
+    background: #fff; border-top: 1px solid #e8edf5;
+    padding: 18px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  footer p { font-size: 0.8rem; color: var(--text-gray); }
+  footer .footer-links { display: flex; gap: 18px; }
+  footer .footer-links a { font-size: 0.8rem; color: var(--text-gray); text-decoration: none; }
+  footer .footer-links a:hover { color: var(--primary); }
+  /* Toast */
+  .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 280px; animation: slideIn 0.3s ease; }
+  .toast.success { background: #f0fdf4; border-left: 4px solid #10b981; }
+  .toast.error { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .toast.info { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .toast-icon { font-size: 1.1rem; margin-top: 1px; }
+  .toast.success .toast-icon { color: #10b981; }
+  .toast.error .toast-icon { color: #ef4444; }
+  .toast.info .toast-icon { color: #3b82f6; }
+  .toast-title { font-weight: 600; font-size: 0.88rem; color: var(--text-dark); }
+  .toast-msg { font-size: 0.82rem; color: var(--text-gray); }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @media (max-width: 1200px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .agents-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .topbar { left: 0; }
+    .topbar-brand { display: block; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="shield"><i class="fas fa-shield-halved"></i></div>
+    <div>
+      <h2>MBSL Management</h2>
+      <p>Policy Administration</p>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link active"><i class="fas fa-table-cells-large"></i> Dashboard</a>
+    <a href="policies.html" class="nav-link"><i class="fas fa-file-contract"></i> Policies</a>
+    <a href="profile.html" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="add-policy.html" class="new-policy-btn"><i class="fas fa-plus"></i> New Policy</a>
+  </div>
+</aside>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-brand">MBSL Insurance</div>
+  <div class="topbar-search">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" placeholder="Search policies..." id="globalSearch">
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" id="themeToggle" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
+    <button class="icon-btn" title="Notifications">
+      <i class="fas fa-bell"></i>
+      <span class="notif-badge"></span>
+    </button>
+    <div class="avatar" id="userAvatar" title="Profile">AU</div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="main">
+  <div class="main-content">
+    <div class="page-header">
+      <h1 id="welcomeMsg">Welcome, Admin User</h1>
+      <p>Here is your policy management summary for today.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon blue"><i class="fas fa-file-contract"></i></div>
+          <span class="stat-badge badge-success">+12% <i class="fas fa-arrow-trend-up"></i></span>
+        </div>
+        <div class="stat-label">Total Policies</div>
+        <div class="stat-value" id="totalPolicies">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon green"><i class="fas fa-sitemap"></i></div>
+          <span class="stat-badge badge-active">Active</span>
+        </div>
+        <div class="stat-label">Total Categories</div>
+        <div class="stat-value" id="totalCategories">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon orange"><i class="fas fa-users"></i></div>
+          <span class="stat-badge badge-internal">Internal</span>
+        </div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="totalUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon purple"><i class="fas fa-sack-dollar"></i></div>
+          <span class="stat-badge badge-live">Live <span class="live-dot"></span></span>
+        </div>
+        <div class="stat-label">Active Users</div>
+        <div class="stat-value" id="activeUsers">0</div>
+      </div>
+    </div>
+
+    <!-- Chart + Alerts -->
+    <div class="dashboard-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Policy Performance &amp; Distribution</h3>
+          <div class="chart-tabs">
+            <button class="chart-tab active" onclick="switchTab(this, '7')">By Category</button>
+            <button class="chart-tab" onclick="switchTab(this, '30')">By Month</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="policyChart"></canvas></div>
+      </div>
+      <div class="alert-panel">
+        <h3>Recent Alerts</h3>
+        <div class="alert-item">
+          <div class="alert-icon red"><i class="fas fa-triangle-exclamation"></i></div>
+          <div class="alert-body">
+            <div class="alert-title">Lapsed: Policy #8921</div>
+            <div class="alert-desc">Automated notice sent to holder.</div>
+            <div class="alert-time">10 MINS AGO</div>
+          </div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon blue"><i class="fas fa-clock-rotate-left"></i></div>
+          <div class="alert-body">
+            <div class="alert-title">Audit Log Update</div>
+            <div class="alert-desc">System-wide permissions review.</div>
+            <div class="alert-time">2 HOURS AGO</div>
+          </div>
+        </div>
+        <div class="alert-item">
+          <div class="alert-icon orange"><i class="fas fa-gear"></i></div>
+          <div class="alert-body">
+            <div class="alert-title">New Category: Cyber</div>
+            <div class="alert-desc">Admin approved new risk category.</div>
+            <div class="alert-time">5 HOURS AGO</div>
+          </div>
+        </div>
+        <a href="policies.html" class="view-all-btn">View All Notifications</a>
+      </div>
+    </div>
+
+    <!-- Top Agents -->
+    <div class="section-header">
+      <h3>Top Performing Agents</h3>
+      <a href="#">Manage Teams</a>
+    </div>
+    <div class="agents-grid">
+      <div class="agent-card">
+        <div class="agent-avatar">
+          <img src="https://images.pexels.com/photos/8837170/pexels-photo-8837170.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200" alt="Sarah J." onerror="this.style.display='none';this.parentElement.textContent='SJ'">
+        </div>
+        <div class="agent-name">Sarah J.</div>
+        <div class="agent-role">Life &amp; Health</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar">
+          <img src="https://images.pexels.com/photos/34129728/pexels-photo-34129728.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200" alt="Michael R." onerror="this.style.display='none';this.parentElement.textContent='MR'">
+        </div>
+        <div class="agent-name">Michael R.</div>
+        <div class="agent-role">Auto Policy</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar">
+          <img src="https://images.pexels.com/photos/28442318/pexels-photo-28442318.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=200&w=200" alt="Elena B." onerror="this.style.display='none';this.parentElement.textContent='EB'">
+        </div>
+        <div class="agent-name">Elena B.</div>
+        <div class="agent-role">General Risk</div>
+      </div>
+      <div class="agent-card invite" id="inviteAgentBtn" title="Invite new agent">
+        <div class="invite-btn"><i class="fas fa-plus"></i></div>
+        <div class="agent-name">Invite</div>
+        <div class="agent-role">New Agent</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2024 MBSL Insurance Management Platform. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Support</a>
+    </div>
+  </footer>
+</main>
+
+<script type="module">
+  import Api from './js/api.js';
+  import { initApp, showToast } from './js/app.js';
+
+  initApp();
+
+  const user = JSON.parse(localStorage.getItem('mbsl_user') || '{}');
+  if (user.name) {
+    document.getElementById('welcomeMsg').textContent = `Welcome, ${user.name}`;
+  }
+
+  let chart = null;
+
+  function buildDashboardData(apiData = {}) {
+    const categories = Array.isArray(apiData.categories) ? apiData.categories : [];
+    const monthly = Array.isArray(apiData.monthly) ? apiData.monthly : [];
+
+    const categoryLabels = categories.length ? categories.map(c => c.category || 'Other') : ['No Policies'];
+    const categoryCounts = categories.length ? categories.map(c => Number(c.count) || 0) : [0];
+    const categoryPremiums = categories.length ? categories.map(c => Number(c.total_premium) || 0) : [0];
+
+    const monthLabels = monthly.length ? monthly.map(m => m.label || '-') : categoryLabels;
+    const monthCounts = monthly.length ? monthly.map(m => Number(m.count) || 0) : categoryCounts;
+    const monthPremiums = monthly.length ? monthly.map(m => Number(m.total_premium) || 0) : categoryPremiums;
+
+    return {
+      total_policies: Number(apiData.total_policies) || 0,
+      total_categories: Number(apiData.total_categories) || categories.length || 0,
+      total_users: Number(apiData.total_users) || 0,
+      active_users: Number(apiData.total_users) || 0,
+      sevenDays: {
+        labels: categoryLabels,
+        activePolicies: categoryCounts,
+        premiumVolume: categoryPremiums
+      },
+      thirtyDays: {
+        labels: monthLabels,
+        activePolicies: monthCounts,
+        premiumVolume: monthPremiums
+      }
+    };
+  }
+
+  async function loadDashboardData() {
+    let data = buildDashboardData();
+
+    try {
+      const res = await Api.stats();
+      if (res.data && res.data.success) {
+        data = buildDashboardData(res.data);
+      } else {
+        showToast('error', 'Dashboard Error', res.data?.message || 'Could not load dashboard data.');
+      }
+    } catch (err) {
+      console.error('Stats loading failed.', err);
+      showToast('error', 'Network Error', 'Could not connect to statistics API.');
+    }
+
+    animateCount(document.getElementById('totalPolicies'), data.total_policies);
+    animateCount(document.getElementById('totalCategories'), data.total_categories);
+    animateCount(document.getElementById('totalUsers'), data.total_users);
+    animateCount(document.getElementById('activeUsers'), data.active_users);
+
+    window.dashboardChartData = data;
+    renderChart('7');
+  }
+
+  function renderChart(range = '30') {
+    const canvas = document.getElementById('policyChart');
+    const ctx = canvas.getContext('2d');
+    const source = range === '7' ? window.dashboardChartData.sevenDays : window.dashboardChartData.thirtyDays;
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: source.labels,
+        datasets: [
+          {
+            label: 'Policies Count',
+            data: source.activePolicies,
+            borderColor: '#0a2558',
+            backgroundColor: 'rgba(10, 37, 88, 0.10)',
+            pointBackgroundColor: '#0a2558',
+            pointBorderColor: '#0a2558',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: true
+          },
+          {
+            label: 'Premium Volume',
+            data: source.premiumVolume,
+            borderColor: '#c8102e',
+            backgroundColor: 'rgba(200, 16, 46, 0.08)',
+            pointBackgroundColor: '#c8102e',
+            pointBorderColor: '#c8102e',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            borderWidth: 3,
+            tension: 0.35,
+            fill: true,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 10, font: { size: 13 } }
+          },
+          tooltip: { enabled: true }
+        },
+        scales: {
+          y: { beginAtZero: true, position: 'left', grid: { color: 'rgba(148, 163, 184, 0.18)' }, ticks: { color: '#64748b' } },
+          y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#64748b' } },
+          x: { grid: { display: false }, ticks: { color: '#64748b' } }
+        }
+      }
+    });
+  }
+
+  window.switchTab = function(el, key) {
+    document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderChart(key);
+  };
+
+  function animateCount(el, target) {
+    const num = Number(target);
+    if (!el || Number.isNaN(num)) return;
+    let start = 0;
+    const duration = 700;
+    const stepTime = 16;
+    const steps = duration / stepTime;
+    const step = Math.max(1, Math.ceil(num / steps));
+    const timer = setInterval(() => {
+      start = Math.min(start + step, num);
+      el.textContent = start.toLocaleString();
+      if (start >= num) clearInterval(timer);
+    }, stepTime);
+  }
+
+  document.getElementById('inviteAgentBtn')?.addEventListener('click', () => {
+    showToast('info', 'Invite Agent', 'Invite agent feature is ready for the next step.');
+  });
+
+  // Add click handlers to stat cards
+  const statCards = document.querySelectorAll('.stat-card');
+  statCards[0]?.addEventListener('click', () => {
+    window.location.href = 'policies.html';
+  });
+  statCards[1]?.addEventListener('click', () => {
+    window.location.href = 'policies.html';
+  });
+  statCards[2]?.addEventListener('click', () => {
+    window.location.href = 'profile.html';
+  });
+  statCards[3]?.addEventListener('click', () => {
+    window.location.href = 'profile.html';
+  });
+
+  // Add hover effect to stat cards
+  statCards.forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('mouseenter', () => {
+      card.style.opacity = '0.8';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.opacity = '1';
+    });
+  });
+
+  loadDashboardData();
+</script>
+</body>
+</html>

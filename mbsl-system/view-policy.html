@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Policy - MBSL Insurance</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.7.0/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root {
+    --primary: #0a2558; --primary-dark: #0d1b3e; --bg: #f4f7fe;
+    --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+    --text-dark: #1e293b; --text-gray: #64748b;
+    --card-shadow: 0 2px 16px rgba(10,37,88,0.08); --radius: 0.75rem; --sidebar-w: 260px;
+  }
+  [data-theme="dark"] { --bg: #0f172a; --text-dark: #f1f5f9; --text-gray: #94a3b8; }
+  [data-theme="dark"] .view-card, [data-theme="dark"] .sidebar, [data-theme="dark"] .topbar,
+  [data-theme="dark"] .side-widget { background: #1e293b !important; border-color: #334155 !important; }
+  [data-theme="dark"] table tbody tr:hover { background: #334155 !important; }
+  [data-theme="dark"] table thead { background: #0f172a !important; }
+  [data-theme="dark"] .topbar-search input { background: #334155; border-color: #475569; color: #f1f5f9; }
+  [data-theme="dark"] .nav-link { color: #94a3b8 !important; }
+  [data-theme="dark"] body { background: var(--bg); }
+  [data-theme="dark"] .timeline-item::before { background: #334155; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text-dark); transition: background 0.3s; }
+  .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh; background: #fff; border-right: 1px solid #e8edf5; display: flex; flex-direction: column; z-index: 100; }
+  .sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; gap: 12px; }
+  .shield { width: 40px; height: 40px; background: linear-gradient(135deg, #0a2558, #1565c0); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0; }
+  .sidebar-brand h2 { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); }
+  .sidebar-brand p { font-size: 0.75rem; color: var(--text-gray); }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 0.6rem; color: var(--text-gray) !important; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; margin-bottom: 4px; }
+  .nav-link:hover { background: #f1f5f9; color: var(--primary) !important; }
+  .nav-link.active { background: var(--primary) !important; color: #fff !important; }
+  .nav-link i { width: 20px; text-align: center; }
+  .sidebar-footer { padding: 16px 12px 20px; }
+  .new-policy-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: linear-gradient(135deg, #0a2558, #1565c0); color: #fff; border: none; border-radius: 0.65rem; font-size: 0.92rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.25s; }
+  .new-policy-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,37,88,0.3); color: #fff; }
+  .topbar { position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: 64px; background: #fff; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; padding: 0 28px; gap: 16px; z-index: 99; }
+  .topbar-search { flex: 1; max-width: 480px; position: relative; }
+  .topbar-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+  .topbar-search input { width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid #e2e8f0; border-radius: 0.65rem; font-size: 0.9rem; color: var(--text-dark); background: #f8fafc; outline: none; transition: all 0.2s; }
+  .topbar-search input:focus { border-color: var(--primary); background: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-gray); font-size: 1rem; transition: all 0.2s; position: relative; }
+  .icon-btn:hover { background: #e2e8f0; color: var(--primary); }
+  .notif-badge { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; background: var(--danger); border-radius: 50%; border: 1.5px solid #fff; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #0a2558, #1565c0); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+  .main { margin-left: var(--sidebar-w); padding-top: 64px; min-height: 100vh; }
+  .main-content { padding: 28px; }
+  /* Back row */
+  .back-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .back-btn { display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: opacity 0.2s; }
+  .back-btn:hover { opacity: 0.7; }
+  .back-divider { color: #cbd5e1; }
+  .policy-ref { color: var(--text-gray); font-size: 0.9rem; }
+  /* Status badges */
+  .status-badges { display: flex; gap: 8px; margin-bottom: 12px; }
+  .status-pill { padding: 5px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.3px; }
+  .status-active { background: #dcfce7; color: #16a34a; }
+  .status-property { background: #e0e7ff; color: #3730a3; border: 1.5px solid #c7d2fe; }
+  /* Page header */
+  .page-title-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .page-title { font-size: 2rem; font-weight: 700; color: var(--text-dark); }
+  .page-meta { color: var(--text-gray); font-size: 0.88rem; margin-bottom: 24px; }
+  .action-row { display: flex; gap: 10px; }
+  .btn-pdf { display: flex; align-items: center; gap: 8px; padding: 11px 20px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; background: #fff; color: var(--text-dark); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-pdf:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-modify { display: flex; align-items: center; gap: 8px; padding: 11px 20px; background: #ef4444; color: #fff; border: none; border-radius: 0.6rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-modify:hover { background: #dc2626; transform: translateY(-1px); }
+  /* Layout */
+  .view-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+  .view-card { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; overflow: hidden; margin-bottom: 20px; }
+  /* Carousel */
+  .carousel { position: relative; height: 360px; overflow: hidden; background: #0a2558; }
+  .carousel-slides { display: flex; height: 100%; transition: transform 0.5s ease; }
+  .carousel-slide { min-width: 100%; height: 100%; position: relative; flex-shrink: 0; }
+  .carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+  .carousel-caption {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+    padding: 24px 20px 18px;
+    color: #fff;
+  }
+  .carousel-caption h4 { font-size: 1.1rem; font-weight: 700; }
+  .carousel-caption p { font-size: 0.82rem; opacity: 0.85; margin-top: 3px; }
+  .carousel-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);
+    border: 1.5px solid rgba(255,255,255,0.35);
+    color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; transition: background 0.2s; z-index: 5;
+  }
+  .carousel-btn:hover { background: rgba(255,255,255,0.35); }
+  .carousel-btn.prev { left: 14px; }
+  .carousel-btn.next { right: 14px; }
+  .carousel-dots { position: absolute; bottom: 16px; right: 20px; display: flex; gap: 6px; z-index: 5; }
+  .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: background 0.2s; }
+  .carousel-dot.active { background: #fff; }
+  /* Coverage table */
+  .card-inner { padding: 22px; }
+  .card-section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .info-btn { width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-gray); font-size: 0.9rem; }
+  table.coverage-table { width: 100%; border-collapse: collapse; }
+  table.coverage-table thead th { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-gray); padding: 10px 12px; text-align: left; border-bottom: 1px solid #e8edf5; background: #f8fafc; }
+  table.coverage-table tbody td { padding: 14px 12px; font-size: 0.88rem; color: var(--text-dark); border-bottom: 1px solid #f1f5f9; }
+  table.coverage-table tbody tr:last-child td { border-bottom: none; }
+  table.coverage-table tbody tr:hover { background: #f8fafc; }
+  .component-name { font-weight: 600; }
+  .td-active { color: #10b981; font-weight: 600; }
+  /* Timeline */
+  .timeline { padding: 22px; }
+  .timeline-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .timeline-header h3 { font-size: 1rem; font-weight: 700; color: var(--text-dark); }
+  .btn-add-note { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border: 1.5px solid #e2e8f0; border-radius: 0.5rem; background: #fff; color: var(--primary); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-add-note:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .timeline-list { position: relative; padding-left: 28px; }
+  .timeline-list::before { content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: #e8edf5; }
+  .timeline-item { position: relative; margin-bottom: 22px; }
+  .timeline-item:last-child { margin-bottom: 0; }
+  .timeline-dot { position: absolute; left: -26px; top: 2px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff; }
+  .dot-green { background: #10b981; }
+  .dot-blue { background: #3b82f6; }
+  .dot-gray { background: #64748b; }
+  .timeline-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 3px; }
+  .timeline-desc { font-size: 0.8rem; color: var(--text-gray); margin-bottom: 4px; }
+  .timeline-date { font-size: 0.72rem; color: #94a3b8; font-weight: 500; letter-spacing: 0.3px; }
+  /* Side widgets */
+  .side-col { display: flex; flex-direction: column; gap: 16px; }
+  .side-widget { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; padding: 20px; }
+  .widget-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-gray); margin-bottom: 6px; }
+  .widget-amount { font-size: 2rem; font-weight: 800; color: #fff; letter-spacing: -1px; }
+  .coverage-widget { background: linear-gradient(135deg, #0a2558, #1565c0); border: none; }
+  .coverage-widget .widget-label { color: rgba(255,255,255,0.7); }
+  .coverage-widget .widget-amount { color: #fff; }
+  .freq-row { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.15); }
+  .freq-label { font-size: 0.8rem; color: rgba(255,255,255,0.7); }
+  .freq-val { font-size: 0.88rem; font-weight: 700; color: #fff; }
+  .due-amount { font-size: 1.7rem; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; margin-bottom: 8px; }
+  .due-alert { color: var(--danger); font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+  .btn-payment { width: 100%; padding: 11px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; background: #fff; color: var(--primary); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-payment:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .risk-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .risk-item:last-child { margin-bottom: 0; }
+  .risk-icon { width: 36px; height: 36px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .r-red { background: #fef2f2; color: #ef4444; }
+  .r-blue { background: #eff6ff; color: #3b82f6; }
+  .r-dark { background: #f1f5f9; color: #475569; }
+  .risk-title { font-size: 0.85rem; font-weight: 700; color: var(--text-dark); }
+  .risk-desc { font-size: 0.78rem; color: var(--text-gray); }
+  .claims-widget { text-align: center; padding: 24px 20px; border: 2px dashed #e2e8f0; }
+  .claims-icon { font-size: 2rem; color: #94a3b8; margin-bottom: 10px; }
+  .claims-title { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+  .claims-msg { font-size: 0.82rem; color: var(--text-gray); margin-bottom: 14px; }
+  .btn-claims { padding: 9px 18px; border: 1.5px solid #e2e8f0; border-radius: 0.5rem; background: #fff; color: var(--primary); font-size: 0.82rem; font-weight: 600; cursor: pointer; width: 100%; }
+  /* Toast */
+  .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 280px; animation: slideIn 0.3s ease; position: relative; }
+  .toast.success { background: #f0fdf4; border-left: 4px solid #10b981; }
+  .toast.info { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .toast .t-icon { font-size: 1.1rem; margin-top: 1px; }
+  .toast.success .t-icon { color: #10b981; }
+  .toast.info .t-icon { color: #3b82f6; }
+  .toast .t-title { font-weight: 600; font-size: 0.88rem; color: var(--text-dark); }
+  .toast .t-msg { font-size: 0.82rem; color: var(--text-gray); }
+  .toast-close { position: absolute; top: 10px; right: 12px; background: none; border: none; cursor: pointer; color: #94a3b8; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  footer { background: #fff; border-top: 1px solid #e8edf5; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+  footer p { font-size: 0.8rem; color: var(--text-gray); }
+  footer .footer-links { display: flex; gap: 18px; }
+  footer .footer-links a { font-size: 0.8rem; color: var(--text-gray); text-decoration: none; }
+  footer .footer-links a:hover { color: var(--primary); }
+  @media (max-width: 1100px) { .view-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main { margin-left: 0; } .topbar { left: 0; } .page-title { font-size: 1.4rem; } .page-title-row { flex-direction: column; gap: 14px; } }
+</style>
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="shield"><i class="fas fa-shield-halved"></i></div>
+    <div><h2>MBSL Management</h2><p>Policy Administration</p></div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-table-cells-large"></i> Dashboard</a>
+    <a href="policies.html" class="nav-link active"><i class="fas fa-file-contract"></i> Policies</a>
+    <a href="profile.html" class="nav-link"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="add-policy.html" class="new-policy-btn"><i class="fas fa-plus"></i> New Policy</a>
+  </div>
+</aside>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-search">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" placeholder="Search policies...">
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" id="themeToggle"><i class="fas fa-moon"></i></button>
+    <button class="icon-btn"><i class="fas fa-bell"></i><span class="notif-badge"></span></button>
+    <div class="avatar" id="userAvatar">AU</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="main-content">
+    <!-- Back row -->
+    <div class="back-row">
+      <a href="policies.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Policies</a>
+      <span class="back-divider">/</span>
+      <span class="policy-ref" id="policyRef">Policy #POL-88210</span>
+    </div>
+
+    <div class="status-badges">
+      <span class="status-pill status-active">Active</span>
+      <span class="status-pill status-property" id="policyCategory">PROPERTY INSURANCE</span>
+    </div>
+
+    <div class="page-title-row">
+      <h1 class="page-title" id="policyTitle">Luxury Estate Premium Coverage</h1>
+      <div class="action-row">
+        <button class="btn-pdf" onclick="exportPDF()"><i class="fas fa-download"></i> Export PDF</button>
+        <button class="btn-modify" onclick="modifyPolicy()"><i class="fas fa-pen"></i> Modify Policy</button>
+      </div>
+    </div>
+    <p class="page-meta" id="policyMeta">Managed by: David Henderson &bull; Last updated 2 days ago</p>
+
+    <div class="view-grid">
+      <!-- Left Column -->
+      <div>
+        <!-- Carousel -->
+        <div class="view-card">
+          <div class="carousel" id="carousel">
+            <div class="carousel-slides" id="carouselSlides">
+              <div class="carousel-slide">
+                <img src="https://images.pexels.com/photos/8143668/pexels-photo-8143668.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=800" alt="Main Residence">
+                <div class="carousel-caption">
+                  <h4>Main Residence - Front View</h4>
+                  <p>Insured Value: $4.2M &bull; Structural Integrity Verified</p>
+                </div>
+              </div>
+              <div class="carousel-slide">
+                <img src="https://images.pexels.com/photos/8143683/pexels-photo-8143683.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=800" alt="Side View">
+                <div class="carousel-caption">
+                  <h4>Property - Side Garden View</h4>
+                  <p>Grounds Coverage &bull; Landscape Protection Included</p>
+                </div>
+              </div>
+              <div class="carousel-slide">
+                <img src="https://images.pexels.com/photos/8082328/pexels-photo-8082328.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=800" alt="Villa">
+                <div class="carousel-caption">
+                  <h4>Villa - Aerial Overview</h4>
+                  <p>Total Estate Area: 8,400 sq ft &bull; Pool &amp; Outbuildings Covered</p>
+                </div>
+              </div>
+            </div>
+            <button class="carousel-btn prev" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
+            <button class="carousel-btn next" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
+            <div class="carousel-dots" id="carouselDots">
+              <div class="carousel-dot active" onclick="goSlide(0)"></div>
+              <div class="carousel-dot" onclick="goSlide(1)"></div>
+              <div class="carousel-dot" onclick="goSlide(2)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coverage Breakdown -->
+        <div class="view-card">
+          <div class="card-inner">
+            <div class="card-section-title">
+              Coverage Breakdown
+              <button class="info-btn" title="Coverage info"><i class="fas fa-circle-info"></i></button>
+            </div>
+            <table class="coverage-table">
+              <thead>
+                <tr>
+                  <th>COMPONENT</th>
+                  <th>LIMIT</th>
+                  <th>DEDUCTIBLE</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="component-name">Dwelling (A)</td><td>$4,200,000</td><td>$10,000</td><td class="td-active">Active</td></tr>
+                <tr><td class="component-name">Other Structures (B)</td><td>$420,000</td><td>$5,000</td><td class="td-active">Active</td></tr>
+                <tr><td class="component-name">Personal Property (C)</td><td>$1,100,000</td><td>$2,500</td><td class="td-active">Active</td></tr>
+                <tr><td class="component-name">Loss of Use (D)</td><td>$840,000</td><td>$0</td><td class="td-active">Active</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="view-card">
+          <div class="timeline">
+            <div class="timeline-header">
+              <h3>Timeline &amp; Activity</h3>
+              <button class="btn-add-note" onclick="addNote()"><i class="fas fa-plus"></i> Add Note</button>
+            </div>
+            <div class="timeline-list">
+              <div class="timeline-item">
+                <div class="timeline-dot dot-green"><i class="fas fa-check"></i></div>
+                <div class="timeline-title">Annual Inspection Completed</div>
+                <div class="timeline-desc">Conducted by Inspector R. Vance &bull; Property rated "Excellent"</div>
+                <div class="timeline-date">OCT 12, 2023 &bull; 10:30 AM</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot dot-blue"><i class="fas fa-pen"></i></div>
+                <div class="timeline-title">Endorsement Added</div>
+                <div class="timeline-desc">Valuable Personal Property schedule updated (Schedule B-2)</div>
+                <div class="timeline-date">SEP 28, 2023 &bull; 02:15 PM</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot dot-gray"><i class="fas fa-dollar-sign"></i></div>
+                <div class="timeline-title">Quarterly Premium Received</div>
+                <div class="timeline-desc">Payment Ref: #PAY-99120 &bull; Auto-pay via Chase Bank</div>
+                <div class="timeline-date">AUG 15, 2023 &bull; 09:00 AM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="side-col">
+        <!-- Coverage Amount -->
+        <div class="side-widget coverage-widget">
+          <div class="widget-label">TOTAL COVERAGE</div>
+          <div class="widget-amount">$5,300,000.00</div>
+          <div class="freq-row">
+            <span class="freq-label">Premium Frequency</span>
+            <span class="freq-val">Quarterly</span>
+          </div>
+        </div>
+
+        <!-- Premium Due -->
+        <div class="side-widget">
+          <div class="widget-label">PREMIUM DUE</div>
+          <div class="due-amount">$12,450.00</div>
+          <div class="due-alert"><i class="fas fa-calendar-days"></i> Due in 14 days</div>
+          <button class="btn-payment" onclick="showToast('info','Payment History','Loading payment records...')">View Payment History</button>
+        </div>
+
+        <!-- Risk Profile -->
+        <div class="side-widget">
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text-dark);margin-bottom:14px">Risk Profile</div>
+          <div class="risk-item">
+            <div class="risk-icon r-red"><i class="fas fa-house-flood-water"></i></div>
+            <div><div class="risk-title">Flood Zone X</div><div class="risk-desc">Low risk area - Minimal exposure</div></div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-icon r-blue"><i class="fas fa-shield-halved"></i></div>
+            <div><div class="risk-title">Smart Home System</div><div class="risk-desc">15% Premium discount applied</div></div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-icon r-dark"><i class="fas fa-fire-extinguisher"></i></div>
+            <div><div class="risk-title">Fire Suppression</div><div class="risk-desc">Central station monitoring active</div></div>
+          </div>
+        </div>
+
+        <!-- Claims History -->
+        <div class="side-widget claims-widget">
+          <div class="claims-icon"><i class="fas fa-clock-rotate-left"></i></div>
+          <div class="claims-title">Claims History</div>
+          <div class="claims-msg">No claims filed in the last 5 years. Great job!</div>
+          <button class="btn-claims" onclick="showToast('info','Claims History','No historical claims found for this policy.')">View Historical Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>© 2024 MBSL Insurance Management Platform. All rights reserved.</p>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Terms</a><a href="#">Support</a></div>
+  </footer>
+</main>
+
+<script>
+  if (localStorage.getItem('mbsl_auth') !== 'true') window.location.href = 'index.html';
+  const user = JSON.parse(localStorage.getItem('mbsl_user') || '{}');
+  if (user.name) document.getElementById('userAvatar').textContent = user.name.split(' ').map(n=>n[0]).join('').substring(0,2);
+
+  // Theme
+  const themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); themeToggle.innerHTML = t === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>'; }
+  applyTheme(localStorage.getItem('mbsl_theme') || 'light');
+  themeToggle.addEventListener('click', () => { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; localStorage.setItem('mbsl_theme', t); applyTheme(t); });
+
+  // URL params
+  const params = new URLSearchParams(window.location.search);
+  const policyId = params.get('id') || 'POL-88210';
+  document.getElementById('policyRef').textContent = `Policy #${policyId}`;
+
+  // Carousel
+  let current = 0;
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.carousel-dot');
+  function goSlide(n) {
+    current = (n + slides.length) % slides.length;
+    document.getElementById('carouselSlides').style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+  function nextSlide() { goSlide(current + 1); }
+  function prevSlide() { goSlide(current - 1); }
+  setInterval(() => goSlide(current + 1), 5000);
+
+  // Actions
+  function modifyPolicy() { window.location.href = `edit-policy.html?id=${policyId}`; }
+
+  function addNote() {
+    const note = prompt('Add a note to the timeline:');
+    if (note && note.trim()) {
+      const list = document.querySelector('.timeline-list');
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      const now = new Date().toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      item.innerHTML = `<div class="timeline-dot dot-green"><i class="fas fa-note-sticky"></i></div><div class="timeline-title">Note Added</div><div class="timeline-desc">${note}</div><div class="timeline-date">${now.toUpperCase()}</div>`;
+      list.insertBefore(item, list.firstChild);
+      showToast('success', 'Note Added', 'Timeline updated successfully.');
+    }
+  }
+
+  function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFillColor(10, 37, 88);
+    doc.rect(0, 0, 210, 35, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MBSL Insurance - Policy Certificate', 14, 16);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Policy #${policyId}  |  Luxury Estate Premium Coverage`, 14, 25);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 32);
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.text('Coverage Breakdown', 14, 48);
+    doc.autoTable({
+      startY: 54,
+      head: [['Component', 'Coverage Limit', 'Deductible', 'Status']],
+      body: [
+        ['Dwelling (A)', '$4,200,000', '$10,000', 'Active'],
+        ['Other Structures (B)', '$420,000', '$5,000', 'Active'],
+        ['Personal Property (C)', '$1,100,000', '$2,500', 'Active'],
+        ['Loss of Use (D)', '$840,000', '$0', 'Active'],
+      ],
+      headStyles: { fillColor: [10, 37, 88], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [244, 247, 254] },
+      styles: { lineColor: [232, 237, 245], lineWidth: 0.3 }
+    });
+    const y = doc.lastAutoTable.finalY + 14;
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.text('Policy Summary', 14, y);
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
+    doc.text(`Total Coverage: $5,300,000.00`, 14, y+8);
+    doc.text(`Premium Due: $12,450.00 (Quarterly)`, 14, y+16);
+    doc.text(`Status: Active | Risk Profile: Low`, 14, y+24);
+    doc.save(`MBSL_Policy_${policyId}.pdf`);
+    showToast('success', 'PDF Exported', 'Policy certificate downloaded successfully.');
+  }
+
+  function showToast(type, title, msg) {
+    const icons = { success: 'fas fa-circle-check', info: 'fas fa-circle-info', error: 'fas fa-circle-xmark' };
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="t-icon ${icons[type]||'fas fa-info-circle'}"></i><div><div class="t-title">${title}</div><div class="t-msg">${msg}</div></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+</script>
+</body>
+</html>

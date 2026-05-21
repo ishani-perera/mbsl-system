@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile - MBSL Insurance</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --primary: #0a2558; --bg: #f4f7fe; --success: #10b981; --danger: #ef4444;
+    --text-dark: #1e293b; --text-gray: #64748b;
+    --card-shadow: 0 2px 16px rgba(10,37,88,0.08); --radius: 0.75rem; --sidebar-w: 260px;
+  }
+  [data-theme="dark"] { --bg: #0f172a; --text-dark: #f1f5f9; --text-gray: #94a3b8; }
+  [data-theme="dark"] .profile-card, [data-theme="dark"] .sidebar, [data-theme="dark"] .topbar,
+  [data-theme="dark"] .stat-box, [data-theme="dark"] .activity-card, [data-theme="dark"] .security-card { background: #1e293b !important; border-color: #334155 !important; }
+  [data-theme="dark"] .form-control, [data-theme="dark"] .form-select { background: #334155 !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+  [data-theme="dark"] .topbar-search input { background: #334155; border-color: #475569; color: #f1f5f9; }
+  [data-theme="dark"] .nav-link { color: #94a3b8 !important; }
+  [data-theme="dark"] body { background: var(--bg); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text-dark); transition: background 0.3s; }
+  .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh; background: #fff; border-right: 1px solid #e8edf5; display: flex; flex-direction: column; z-index: 100; }
+  .sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; gap: 12px; }
+  .shield { width: 40px; height: 40px; background: linear-gradient(135deg, #0a2558, #1565c0); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0; }
+  .sidebar-brand h2 { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); }
+  .sidebar-brand p { font-size: 0.75rem; color: var(--text-gray); }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 0.6rem; color: var(--text-gray) !important; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; margin-bottom: 4px; }
+  .nav-link:hover { background: #f1f5f9; color: var(--primary) !important; }
+  .nav-link.active { background: var(--primary) !important; color: #fff !important; }
+  .nav-link i { width: 20px; text-align: center; }
+  .sidebar-footer { padding: 16px 12px 20px; }
+  .new-policy-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; background: linear-gradient(135deg, #0a2558, #1565c0); color: #fff; border: none; border-radius: 0.65rem; font-size: 0.92rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.25s; }
+  .new-policy-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,37,88,0.3); color: #fff; }
+  .topbar { position: fixed; top: 0; left: var(--sidebar-w); right: 0; height: 64px; background: #fff; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; padding: 0 28px; gap: 16px; z-index: 99; }
+  .topbar-search { flex: 1; max-width: 480px; position: relative; }
+  .topbar-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+  .topbar-search input { width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid #e2e8f0; border-radius: 0.65rem; font-size: 0.9rem; color: var(--text-dark); background: #f8fafc; outline: none; transition: all 0.2s; }
+  .topbar-search input:focus { border-color: var(--primary); background: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-gray); font-size: 1rem; transition: all 0.2s; position: relative; }
+  .icon-btn:hover { background: #e2e8f0; color: var(--primary); }
+  .notif-badge { position: absolute; top: 3px; right: 3px; width: 9px; height: 9px; background: var(--danger); border-radius: 50%; border: 1.5px solid #fff; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #0a2558, #1565c0); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+  .main { margin-left: var(--sidebar-w); padding-top: 64px; min-height: 100vh; }
+  .main-content { padding: 32px 28px; }
+  .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-gray); }
+  .breadcrumb a { color: var(--text-gray); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--primary); }
+  .breadcrumb .sep { color: #cbd5e1; }
+  .breadcrumb .current { color: var(--text-dark); font-weight: 600; }
+  .profile-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+  /* Profile card */
+  .profile-card { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; overflow: hidden; }
+  .profile-banner { height: 100px; background: linear-gradient(135deg, #0a2558, #1565c0); }
+  .profile-body { padding: 20px; text-align: center; }
+  .profile-avatar-wrap { position: relative; margin-top: -40px; margin-bottom: 14px; display: inline-block; }
+  .profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #0a2558, #1565c0); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.8rem; font-weight: 700; border: 4px solid #fff; box-shadow: 0 4px 12px rgba(10,37,88,0.2); margin: 0 auto; }
+  .avatar-edit { position: absolute; bottom: 2px; right: 0; width: 26px; height: 26px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; border: 2px solid #fff; }
+  .profile-name { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+  .profile-role { display: inline-block; background: linear-gradient(135deg, #0a2558, #1565c0); color: #fff; font-size: 0.75rem; font-weight: 600; padding: 3px 12px; border-radius: 20px; margin-bottom: 6px; }
+  .profile-email { font-size: 0.82rem; color: var(--text-gray); margin-bottom: 16px; }
+  .profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-box { background: #f8fafc; border-radius: 0.55rem; padding: 12px; text-align: center; border: 1px solid #e8edf5; }
+  .stat-box .val { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+  .stat-box .lbl { font-size: 0.72rem; color: var(--text-gray); margin-top: 2px; }
+  .btn-logout { width: 100%; padding: 11px; background: #fef2f2; color: #ef4444; border: 1.5px solid #fecaca; border-radius: 0.6rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+  .btn-logout:hover { background: #ef4444; color: #fff; }
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 20px; }
+  .edit-card { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; padding: 24px; }
+  .edit-card h3 { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; gap: 8px; }
+  .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-gray); margin-bottom: 7px; }
+  .form-control, .form-select { width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 0.6rem; font-size: 0.9rem; color: var(--text-dark); background: #f8fafc; outline: none; transition: all 0.2s; font-family: inherit; }
+  .form-control:focus, .form-select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(10,37,88,0.07); }
+  .form-control[readonly] { background: #f1f5f9; color: var(--text-gray); cursor: default; }
+  .btn-save { display: flex; align-items: center; gap: 8px; padding: 11px 24px; background: linear-gradient(135deg, #0a2558, #1565c0); color: #fff; border: none; border-radius: 0.6rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.25s; }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,37,88,0.3); }
+  /* Security card */
+  .security-card { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; padding: 24px; }
+  .security-card h3 { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #e8edf5; display: flex; align-items: center; gap: 8px; }
+  .pass-wrap { position: relative; }
+  .pass-wrap input { padding-right: 42px; }
+  .toggle-pass { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; background: none; border: none; }
+  .security-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+  .security-row:last-of-type { border-bottom: none; }
+  .sec-label { font-size: 0.88rem; font-weight: 600; color: var(--text-dark); }
+  .sec-desc { font-size: 0.78rem; color: var(--text-gray); margin-top: 2px; }
+  .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: #e2e8f0; border-radius: 24px; transition: background 0.3s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle-switch input:checked + .toggle-slider { background: var(--success); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+  /* Activity */
+  .activity-card { background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid #e8edf5; padding: 24px; }
+  .activity-card h3 { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 18px; }
+  .activity-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+  .activity-item:last-child { border-bottom: none; }
+  .act-icon { width: 34px; height: 34px; border-radius: 0.45rem; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+  .act-title { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
+  .act-time { font-size: 0.75rem; color: var(--text-gray); margin-top: 2px; }
+  /* Toast */
+  .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+  .toast { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 280px; animation: slideIn 0.3s ease; position: relative; }
+  .toast.success { background: #f0fdf4; border-left: 4px solid #10b981; }
+  .toast.error { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .toast .t-icon { font-size: 1.1rem; margin-top: 1px; }
+  .toast.success .t-icon { color: #10b981; }
+  .toast.error .t-icon { color: #ef4444; }
+  .toast .t-title { font-weight: 600; font-size: 0.88rem; color: var(--text-dark); }
+  .toast .t-msg { font-size: 0.82rem; color: var(--text-gray); }
+  .toast-close { position: absolute; top: 10px; right: 12px; background: none; border: none; cursor: pointer; color: #94a3b8; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  footer { background: #fff; border-top: 1px solid #e8edf5; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; }
+  footer p { font-size: 0.8rem; color: var(--text-gray); }
+  footer .footer-links { display: flex; gap: 18px; }
+  footer .footer-links a { font-size: 0.8rem; color: var(--text-gray); text-decoration: none; }
+  footer .footer-links a:hover { color: var(--primary); }
+  @media (max-width: 1000px) { .profile-grid { grid-template-columns: 1fr; } .form-row2 { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main { margin-left: 0; } .topbar { left: 0; } }
+</style>
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="shield"><i class="fas fa-shield-halved"></i></div>
+    <div><h2>MBSL Management</h2><p>Policy Administration</p></div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-link"><i class="fas fa-table-cells-large"></i> Dashboard</a>
+    <a href="policies.html" class="nav-link"><i class="fas fa-file-contract"></i> Policies</a>
+    <a href="profile.html" class="nav-link active"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="add-policy.html" class="new-policy-btn"><i class="fas fa-plus"></i> New Policy</a>
+  </div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-search">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="text" placeholder="Search policies...">
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" id="themeToggle"><i class="fas fa-moon"></i></button>
+    <button class="icon-btn"><i class="fas fa-bell"></i><span class="notif-badge"></span></button>
+    <div class="avatar" id="userAvatar">AU</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="main-content">
+    <div class="breadcrumb">
+      <a href="dashboard.html">Dashboard</a>
+      <span class="sep"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i></span>
+      <span class="current">Profile</span>
+    </div>
+
+    <div class="profile-grid">
+      <!-- Left: Profile Card -->
+      <div>
+        <div class="profile-card">
+          <div class="profile-banner"></div>
+          <div class="profile-body">
+            <div class="profile-avatar-wrap">
+              <img id="profileAvatarImg" style="display:none;width:80px;height:80px;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 12px rgba(10,37,88,0.2);object-fit:cover;">
+              <div class="profile-avatar" id="profileAvatar">AU</div>
+              <div class="avatar-edit" title="Change photo" onclick="document.getElementById('photoInput').click()"><i class="fas fa-camera"></i></div>
+              <input type="file" id="photoInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="profile-name" id="profileName">Admin User</div>
+            <div class="profile-role" id="profileRole">Admin</div>
+            <div class="profile-email" id="profileEmail">admin@mbsl.com</div>
+            <div class="profile-stats">
+              <div class="stat-box"><div class="val">1,248</div><div class="lbl">Policies</div></div>
+              <div class="stat-box"><div class="val">24</div><div class="lbl">Categories</div></div>
+              <div class="stat-box"><div class="val">99.8%</div><div class="lbl">Uptime</div></div>
+              <div class="stat-box"><div class="val">4.9★</div><div class="lbl">Rating</div></div>
+            </div>
+            <button class="btn-logout" onclick="logout()"><i class="fas fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div class="right-col">
+        <!-- Edit Info -->
+        <div class="edit-card">
+          <h3><i class="fas fa-user-pen" style="color:var(--primary)"></i> Personal Information</h3>
+          <form id="profileForm">
+            <div class="form-row2">
+              <div>
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="editName" value="Admin User">
+              </div>
+              <div>
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="editEmail" value="admin@mbsl.com">
+              </div>
+            </div>
+            <div class="form-row2">
+              <div>
+                <label class="form-label">Role</label>
+                <input type="text" class="form-control" value="Administrator" readonly>
+              </div>
+              <div>
+                <label class="form-label">Department</label>
+                <select class="form-select">
+                  <option>Policy Management</option>
+                  <option>Claims Processing</option>
+                  <option>Risk Assessment</option>
+                  <option>Compliance</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row2">
+              <div>
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" placeholder="+1 (555) 000-0000">
+              </div>
+              <div>
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" placeholder="New York, USA">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bio</label>
+              <textarea class="form-control" style="height:80px;resize:vertical" placeholder="Brief description about yourself..."></textarea>
+            </div>
+            <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Changes</button>
+          </form>
+        </div>
+
+        <!-- Security -->
+        <div class="security-card">
+          <h3><i class="fas fa-lock" style="color:var(--primary)"></i> Security Settings</h3>
+          <div class="form-row2" style="margin-bottom:16px">
+            <div>
+              <label class="form-label">New Password</label>
+              <div class="pass-wrap">
+                <input type="password" class="form-control" id="newPass" placeholder="New password">
+                <button type="button" class="toggle-pass" onclick="togglePass('newPass')"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Confirm Password</label>
+              <div class="pass-wrap">
+                <input type="password" class="form-control" id="confPass" placeholder="Confirm password">
+                <button type="button" class="toggle-pass" onclick="togglePass('confPass')"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="security-row">
+            <div>
+              <div class="sec-label">Two-Factor Authentication</div>
+              <div class="sec-desc">Add an extra layer of security to your account</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="security-row">
+            <div>
+              <div class="sec-label">Email Notifications</div>
+              <div class="sec-desc">Receive alerts for policy changes and approvals</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="security-row">
+            <div>
+              <div class="sec-label">Session Timeout</div>
+              <div class="sec-desc">Auto logout after 30 minutes of inactivity</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+          <br>
+          <button class="btn-save" onclick="updatePassword()"><i class="fas fa-key"></i> Update Password</button>
+        </div>
+
+        <!-- Activity -->
+        <div class="activity-card">
+          <h3>Recent Activity</h3>
+          <div id="activityContainer">
+            <div class="activity-item">
+              <div class="act-icon" style="background:#f0fdf4;color:#10b981"><i class="fas fa-file-contract"></i></div>
+              <div><div class="act-title">No activity yet</div><div class="act-time">Start creating policies...</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>© 2024 MBSL Insurance Management Platform. All rights reserved.</p>
+    <div class="footer-links"><a href="#">Privacy Policy</a><a href="#">Terms</a><a href="#">Support</a></div>
+  </footer>
+</main>
+
+<script>
+  if (localStorage.getItem('mbsl_auth') !== 'true') window.location.href = 'index.html';
+  const user = JSON.parse(localStorage.getItem('mbsl_user') || '{}');
+  if (user.name) {
+    const initials = user.name.split(' ').map(n=>n[0]).join('').substring(0,2);
+    document.getElementById('userAvatar').textContent = initials;
+    document.getElementById('profileAvatar').textContent = initials;
+    document.getElementById('profileName').textContent = user.name;
+    document.getElementById('profileRole').textContent = user.role || 'Admin';
+    document.getElementById('profileEmail').textContent = user.email || 'admin@mbsl.com';
+    document.getElementById('editName').value = user.name;
+    document.getElementById('editEmail').value = user.email || 'admin@mbsl.com';
+  }
+
+  const themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); themeToggle.innerHTML = t === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>'; }
+  applyTheme(localStorage.getItem('mbsl_theme') || 'light');
+  themeToggle.addEventListener('click', () => { const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; localStorage.setItem('mbsl_theme', t); applyTheme(t); });
+
+  document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('editName').value;
+    const email = document.getElementById('editEmail').value;
+    const u = JSON.parse(localStorage.getItem('mbsl_user') || '{}');
+    u.name = name; u.email = email;
+    localStorage.setItem('mbsl_user', JSON.stringify(u));
+    document.getElementById('profileName').textContent = name;
+    document.getElementById('profileEmail').textContent = email;
+    const initials = name.split(' ').map(n=>n[0]).join('').substring(0,2);
+    document.getElementById('profileAvatar').textContent = initials;
+    document.getElementById('userAvatar').textContent = initials;
+    showToast('success', 'Profile Updated', 'Your profile has been saved successfully.');
+  });
+
+  function updatePassword() {
+    const np = document.getElementById('newPass').value;
+    const cp = document.getElementById('confPass').value;
+    if (!np || !cp) { showToast('error', 'Validation Error', 'Please fill in both password fields.'); return; }
+    if (np !== cp) { showToast('error', 'Mismatch', 'Passwords do not match. Please try again.'); return; }
+    if (np.length < 6) { showToast('error', 'Weak Password', 'Password must be at least 6 characters.'); return; }
+    document.getElementById('newPass').value = '';
+    document.getElementById('confPass').value = '';
+    showToast('success', 'Password Updated', 'Your password has been changed successfully.');
+  }
+
+  function togglePass(id) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  function logout() {
+    localStorage.removeItem('mbsl_auth');
+    localStorage.removeItem('mbsl_user');
+    window.location.href = 'index.html';
+  }
+
+  // Photo upload handler
+  document.getElementById('photoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('error', 'Invalid File', 'Please select an image file (JPG, PNG, GIF, etc.).');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('error', 'File Too Large', 'Image must be less than 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const imageData = event.target.result;
+      
+      // Save to localStorage
+      localStorage.setItem('mbsl_user_photo', imageData);
+      
+      // Display image
+      const avatarImg = document.getElementById('profileAvatarImg');
+      const profileAvatar = document.getElementById('profileAvatar');
+      avatarImg.src = imageData;
+      avatarImg.style.display = 'block';
+      profileAvatar.style.display = 'none';
+      
+      // Update avatar in topbar
+      const userAvatar = document.getElementById('userAvatar');
+      const topbarAvatar = document.createElement('img');
+      topbarAvatar.src = imageData;
+      topbarAvatar.style.width = '38px';
+      topbarAvatar.style.height = '38px';
+      topbarAvatar.style.borderRadius = '50%';
+      topbarAvatar.style.objectFit = 'cover';
+      userAvatar.innerHTML = '';
+      userAvatar.appendChild(topbarAvatar);
+      
+      showToast('success', 'Photo Updated', 'Your profile picture has been updated.');
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    this.value = '';
+  });
+
+  // Load saved photo on page load
+  window.addEventListener('load', function() {
+    const savedPhoto = localStorage.getItem('mbsl_user_photo');
+    if (savedPhoto) {
+      const avatarImg = document.getElementById('profileAvatarImg');
+      const profileAvatar = document.getElementById('profileAvatar');
+      const userAvatar = document.getElementById('userAvatar');
+      
+      avatarImg.src = savedPhoto;
+      avatarImg.style.display = 'block';
+      profileAvatar.style.display = 'none';
+      
+      const topbarAvatar = document.createElement('img');
+      topbarAvatar.src = savedPhoto;
+      topbarAvatar.style.width = '38px';
+      topbarAvatar.style.height = '38px';
+      topbarAvatar.style.borderRadius = '50%';
+      topbarAvatar.style.objectFit = 'cover';
+      userAvatar.innerHTML = '';
+      userAvatar.appendChild(topbarAvatar);
+    }
+    
+    // Load recent activity
+    loadRecentActivity();
+  });
+
+  // Activity Logger - Global function to log activities
+  window.logActivity = function(title, type = 'policy', icon = 'file-contract', color = 'green') {
+    const activities = JSON.parse(localStorage.getItem('mbsl_activities') || '[]');
+    
+    const activity = {
+      title: title,
+      type: type,
+      icon: icon,
+      color: color,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Add to beginning of array (most recent first)
+    activities.unshift(activity);
+    
+    // Keep only last 20 activities
+    if (activities.length > 20) {
+      activities.pop();
+    }
+    
+    localStorage.setItem('mbsl_activities', JSON.stringify(activities));
+    
+    // If profile page is open, update it
+    const container = document.getElementById('activityContainer');
+    if (container) {
+      loadRecentActivity();
+    }
+  };
+
+  // Format time difference
+  function formatTimeAgo(timestamp) {
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffMs = now - past;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    
+    return past.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: past.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+  }
+
+  // Color mapping for activity types
+  const activityColors = {
+    green: { bg: '#f0fdf4', text: '#10b981' },
+    blue: { bg: '#eff6ff', text: '#3b82f6' },
+    orange: { bg: '#fff7ed', text: '#f59e0b' },
+    red: { bg: '#fef2f2', text: '#ef4444' }
+  };
+
+  // Load and render recent activity
+  function loadRecentActivity() {
+    const activities = JSON.parse(localStorage.getItem('mbsl_activities') || '[]');
+    const container = document.getElementById('activityContainer');
+    
+    if (!container) return;
+    
+    if (activities.length === 0) {
+      container.innerHTML = `
+        <div class="activity-item">
+          <div class="act-icon" style="background:#f0fdf4;color:#10b981"><i class="fas fa-file-contract"></i></div>
+          <div><div class="act-title">No activity yet</div><div class="act-time">Start creating policies...</div></div>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = activities.map(activity => {
+      const colors = activityColors[activity.color] || activityColors.green;
+      return `
+        <div class="activity-item">
+          <div class="act-icon" style="background:${colors.bg};color:${colors.text}"><i class="fas fa-${activity.icon}"></i></div>
+          <div><div class="act-title">${activity.title}</div><div class="act-time">${formatTimeAgo(activity.timestamp)}</div></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function showToast(type, title, msg) {
+    const icons = { success: 'fas fa-circle-check', error: 'fas fa-circle-xmark' };
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="t-icon ${icons[type]||'fas fa-info-circle'}"></i><div><div class="t-title">${title}</div><div class="t-msg">${msg}</div></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+</script>
+</body>
+</html>
