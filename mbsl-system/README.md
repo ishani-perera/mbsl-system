@@ -7,7 +7,9 @@
 ![XAMPP](https://img.shields.io/badge/XAMPP-Server-FB7A24?style=for-the-badge&logo=xampp&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-Frontend-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-A modern, responsive, and fully functional Insurance Policy Management System developed using **HTML, CSS, JavaScript, PHP, and MySQL**.
+# MBSL Insurance Policy Management System
+
+A modern and responsive Insurance Policy Management System developed using HTML, CSS, JavaScript, PHP, and MySQL.
 
 </div>
 
@@ -15,63 +17,77 @@ A modern, responsive, and fully functional Insurance Policy Management System de
 
 # 📌 Overview
 
-The **MBSL Insurance Policy Management System** is a complete web-based platform designed to manage insurance policies efficiently through a clean and responsive interface.
+The **MBSL Insurance Policy Management System** is a fully functional web-based application designed to manage insurance policies efficiently through a modern and responsive interface.
 
-The system provides administrators and users with powerful features including policy management, dashboard analytics, profile management, exports, reporting, activity tracking, responsive mobile support, and dark mode UI.
+The system allows administrators and users to:
 
-This project was developed as a full-stack academic and learning-based application using frontend and backend technologies with MySQL database integration.
+- Manage insurance policies
+- Track activities
+- View dashboard analytics
+- Export reports
+- Maintain user profiles
+- Use responsive mobile-friendly layouts
+- Access dark mode interfaces
+
+This project was developed using frontend and backend technologies with MySQL database integration.
 
 ---
 
-# ✨ Key Features
+# ✨ Features
 
 ## 🔐 Authentication System
+
 - Secure Login System
-- Admin & Normal User Roles
+- Admin & User Roles
 - Session Handling
 - Protected Pages
 
 ---
 
 ## 📋 Policy Management
-- Add New Policies
-- Edit Existing Policies
+
+- Add Policies
+- Edit Policies
 - Delete Policies
 - View Policy Details
-- Search & Filter Policies
+- Search Policies
+- Filter Policies
 
 ---
 
 ## 📊 Dashboard Analytics
+
 - Total Policies Counter
 - Total Categories Counter
-- Active Users Statistics
-- Premium Volume Analysis
-- Interactive Performance Charts
+- Active Users Counter
+- Premium Volume Statistics
+- Interactive Charts
 - Recent Alerts & Notifications
 
 ---
 
 ## 📄 Export Features
+
 - Export Policy Data to Excel
 - Export Policy Reports to PDF
 
 ---
 
 ## 👤 User Profile Management
+
 - Update User Information
 - Security Settings
-- Password Update
+- Password Management
 - Activity Tracking
 
 ---
 
-## 🌙 UI & Responsive Design
-- Fully Responsive Design
-- Mobile Friendly Interface
+## 🌙 UI Features
+
+- Responsive Design
+- Mobile Friendly Layout
 - Dark Mode Dashboard
-- Modern Clean UI
-- Interactive Components
+- Modern User Interface
 
 ---
 
@@ -81,12 +97,11 @@ This project was developed as a full-stack academic and learning-based applicati
 |---|---|
 | HTML5 | Frontend Structure |
 | CSS3 | Styling & Responsive Design |
-| JavaScript | Frontend Logic |
+| JavaScript | Frontend Functionality |
 | PHP | Backend Development |
 | MySQL | Database Management |
-| XAMPP | Local Server Environment |
-| Chart.js | Dashboard Analytics |
-| Bootstrap | Responsive Components |
+| XAMPP | Local Development Environment |
+| Chart.js | Dashboard Charts |
 
 ---
 
@@ -104,12 +119,12 @@ mbsl-system/
 ├── screenshots/
 │   ├── dashboard-dark.png
 │   ├── dashboard-light.png
+│   ├── er-diagram.png
 │   ├── export-excel.png
 │   ├── export.pdf.png
 │   ├── policies-page.png
 │   ├── profile-dark.png
-│   ├── profile-page.png
-│   └── er-diagram.png
+│   └── profile-page.png
 │
 ├── add-policy.html
 ├── dashboard.html
@@ -147,49 +162,49 @@ Password: admin123
 
 ---
 
-## 1️⃣ Dashboard - Dark Mode
+# 1️⃣ Dashboard - Dark Mode
 
 ![Dashboard Dark](screenshots/dashboard-dark.png)
 
 ---
 
-## 2️⃣ Dashboard - Light Mode
+# 2️⃣ Dashboard - Light Mode
 
 ![Dashboard Light](screenshots/dashboard-light.png)
 
 ---
 
-## 3️⃣ Policies Management Page
+# 3️⃣ Policies Management Page
 
 ![Policies Page](screenshots/policies-page.png)
 
 ---
 
-## 4️⃣ User Profile Page
+# 4️⃣ Profile Page
 
 ![Profile Page](screenshots/profile-page.png)
 
 ---
 
-## 5️⃣ Profile Page - Dark Mode
+# 5️⃣ Profile Page - Dark Mode
 
 ![Profile Dark](screenshots/profile-dark.png)
 
 ---
 
-## 6️⃣ Export Policies to Excel
+# 6️⃣ Export Policies to Excel
 
 ![Export Excel](screenshots/export-excel.png)
 
 ---
 
-## 7️⃣ Export Policies to PDF
+# 7️⃣ Export Policies to PDF
 
 ![Export PDF](screenshots/export.pdf.png)
 
 ---
 
-## 8️⃣ Database ER Diagram
+# 8️⃣ Database ER Diagram
 
 ![ER Diagram](screenshots/er-diagram.png)
 
@@ -199,17 +214,17 @@ Password: admin123
 
 ## 📌 Prerequisites
 
-Before running the project, ensure the following software is installed:
+Before running the project, install:
 
 - XAMPP
 - PHP 8+
 - MySQL
-- VS Code (Recommended)
 - Modern Web Browser
+- VS Code (Recommended)
 
 ---
 
-# 🚀 Step 1 — Clone the Repository
+# 🚀 Step 1 — Clone Repository
 
 ```bash
 git clone https://github.com/ishani-perera/mbsl-system.git
@@ -225,7 +240,7 @@ Move the project folder into:
 C:\xampp\htdocs\
 ```
 
-Final project path should be:
+Final path should be:
 
 ```text
 C:\xampp\htdocs\mbsl-system-fixed\mbsl-system
@@ -235,14 +250,15 @@ C:\xampp\htdocs\mbsl-system-fixed\mbsl-system
 
 # 🚀 Step 3 — Start Apache & MySQL
 
-Open **XAMPP Control Panel** and start:
+Open XAMPP Control Panel
 
+Start:
 - Apache
 - MySQL
 
 ---
 
-# 🚀 Step 4 — Import the Database
+# 🚀 Step 4 — Import Database
 
 ## Open phpMyAdmin
 
@@ -262,18 +278,18 @@ mbsl_insurance
 
 ## Import SQL File
 
-1. Click **Import**
+1. Click Import
 2. Select:
 
 ```text
 database.sql
 ```
 
-3. Click **Go**
+3. Click Go
 
 ---
 
-# 🚀 Step 5 — Run the Application
+# 🚀 Step 5 — Run the Project
 
 Open browser:
 
@@ -312,24 +328,28 @@ http://localhost/mbsl-system-fixed/mbsl-system/index.html
 - Premium Volume Tracking
 - Active User Monitoring
 - Category Distribution
-- Real-Time Dashboard Statistics
-- Recent Alerts & Notifications
+- Dashboard Statistics
+- Recent Alerts
 
 ---
 
-# 📄 Export & Reporting
+# 📄 Export Features
 
 ## Excel Export
+
 Generate downloadable Excel reports for policy records.
 
+---
+
 ## PDF Export
-Generate professional PDF policy reports.
+
+Generate professional PDF reports.
 
 ---
 
 # 📱 Responsive Design
 
-The system is fully optimized for:
+Optimized for:
 
 - Desktop Devices
 - Tablets
@@ -343,7 +363,6 @@ The system is fully optimized for:
 - Session Management
 - Input Validation
 - Protected API Requests
-- Data Sanitization
 
 ---
 
@@ -351,7 +370,7 @@ The system is fully optimized for:
 
 ## Tested Modules
 
-- Authentication System
+- Login Authentication
 - Policy CRUD Operations
 - Search & Filtering
 - Dashboard Analytics
@@ -388,7 +407,7 @@ Ensure:
 
 ## 404 Not Found Error
 
-Ensure project folder exists inside:
+Ensure the project folder exists inside:
 
 ```text
 htdocs/
@@ -408,7 +427,6 @@ http://localhost/mbsl-system-fixed/mbsl-system/index.html
 - Email Notifications
 - Cloud Deployment
 - Advanced Reports
-- Payment Gateway Integration
 - Role-Based Access Control
 
 ---
@@ -429,18 +447,16 @@ This project is licensed under the MIT License.
 
 # ⭐ Show Your Support
 
-If you like this project, please give it a ⭐ on GitHub.
+If you like this project, give it a ⭐ on GitHub.
 
 ---
 
-# ❤️ Acknowledgements
+# ❤️ Thank You
 
-Special thanks to everyone who supported and contributed to the development of this project.
-
----
+Developed for academic and educational purposes.
 
 <div align="center">
 
-Made with ❤️ using PHP, MySQL, JavaScript & Bootstrap
+Made with ❤️ using PHP, MySQL, JavaScript & CSS
 
 </div>
